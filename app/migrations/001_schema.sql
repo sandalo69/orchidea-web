@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     password_hash VARCHAR(255) NOT NULL,
     confermato  BOOLEAN NOT NULL DEFAULT FALSE,
     token_conferma VARCHAR(255),
+    token_conferma_scadenza TIMESTAMP,
     created_at  TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
@@ -119,5 +120,4 @@ CREATE INDEX IF NOT EXISTS idx_bookings_stato   ON bookings(stato);
 CREATE INDEX IF NOT EXISTS idx_bookings_timer   ON bookings(scadenza_timer)
     WHERE stato = 'temporanea';
 CREATE INDEX IF NOT EXISTS idx_seats_layout     ON seats(layout_id);
-CREATE INDEX IF NOT EXISTS idx_users_email      ON users(email);
 CREATE INDEX IF NOT EXISTS idx_events_data      ON events(data_evento);

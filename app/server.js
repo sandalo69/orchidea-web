@@ -1,4 +1,9 @@
 require('dotenv').config();
+
+if (!process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET environment variable is required');
+}
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -14,6 +19,9 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: false },
 });
+
+// Trust nginx reverse proxy
+app.set('trust proxy', 1);
 
 // Sicurezza HTTP headers
 app.use(helmet({ contentSecurityPolicy: false }));
