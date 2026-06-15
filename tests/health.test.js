@@ -14,7 +14,7 @@ const { pool } = require('../app/db');
 
 afterAll(async () => {
   await pool.end();
-  server.close();
+  await new Promise((resolve) => server.close(resolve));
 });
 
 describe('GET /health', () => {

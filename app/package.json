@@ -33,6 +33,8 @@
   },
   "jest": {
     "testEnvironment": "node",
-    "testTimeout": 10000
+    "testTimeout": 10000,
+    "roots": ["<rootDir>", "<rootDir>/../tests"],
+    "modulePaths": ["<rootDir>/node_modules"]
   }
 }
