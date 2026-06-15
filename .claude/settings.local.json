@@ -1,0 +1,27 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker --version)",
+      "Bash(docker info *)",
+      "Bash(python3 -c \"import PyPDF2\")",
+      "Bash(python3 -c \"import pdfplumber\")",
+      "Bash(grep -v \"^[^a-zA-Z]*$\")",
+      "Bash(grep -E \"[a-zA-Z]{3,}\")",
+      "Bash(python3 *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git config *)",
+      "Bash(git commit *)",
+      "Bash(git ls-tree *)",
+      "Bash(read d *)",
+      "Bash(touch __TRACKED_VAR__/.gitkeep)",
+      "Bash(git -C /mnt/c/progetti/CLAUDE/sito add .gitignore)",
+      "Bash(git *)",
+      "Bash(npm install *)",
+      "Bash(npm test *)",
+      "Bash(npx jest *)",
+      "Bash(NODE_PATH=/mnt/c/progetti/CLAUDE/sito/app/node_modules npx jest --roots /mnt/c/progetti/CLAUDE/sito/tests --testPathPattern=health.test.js --runInBand --forceExit)"
+    ]
+  }
+}
