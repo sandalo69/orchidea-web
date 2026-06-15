@@ -4,3 +4,6 @@ app/uploads/*
 !app/uploads/.gitkeep
 *.log
 .DS_Store
+docker-compose.override.yml
+.vscode/
+.idea/
