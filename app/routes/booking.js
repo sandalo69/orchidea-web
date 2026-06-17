@@ -68,12 +68,14 @@ router.get('/checkout/:bookingId', requireUser, async (req, res, next) => {
 router.post('/checkout/:bookingId/stripe', requireUser, async (req, res, next) => {
   try {
     const booking = await bookingService.getById(parseInt(req.params.bookingId, 10));
-    if (!booking || booking.user_id !== req.session.userId || booking.stato === 'annullata' || booking.stato === 'confermata' || booking.stato === 'in_attesa') {
+    if (!booking || booking.user_id !== req.session.userId || booking.stato === 'annullata' || booking.stato === 'confermata') {
       return res.status(400).json({ error: 'Prenotazione non valida' });
     }
     const returnUrl = `${process.env.BASE_URL}/prenota/checkout/${booking.id}/stripe/return`;
     const intent = await paymentService.createStripeIntent(booking.id, parseFloat(booking.importo), returnUrl);
-    await bookingService.setInAttesa(booking.id);
+    if (booking.stato === 'temporanea') {
+      await bookingService.setInAttesa(booking.id);
+    }
     res.json({ clientSecret: intent.client_secret, publishableKey: process.env.STRIPE_PUBLISHABLE_KEY });
   } catch (err) {
     if (err.code === 'NO_STRIPE_KEY') return res.status(503).json({ error: 'Pagamento Stripe non configurato' });
@@ -106,11 +108,13 @@ router.get('/checkout/:bookingId/stripe/return', requireUser, async (req, res, n
 router.post('/checkout/:bookingId/paypal', requireUser, async (req, res, next) => {
   try {
     const booking = await bookingService.getById(parseInt(req.params.bookingId, 10));
-    if (!booking || booking.user_id !== req.session.userId || booking.stato === 'annullata' || booking.stato === 'confermata' || booking.stato === 'in_attesa') {
+    if (!booking || booking.user_id !== req.session.userId || booking.stato === 'annullata' || booking.stato === 'confermata') {
       return res.status(400).json({ error: 'Prenotazione non valida' });
     }
     const order = await paymentService.createPayPalOrder(booking.id, parseFloat(booking.importo));
-    await bookingService.setInAttesa(booking.id);
+    if (booking.stato === 'temporanea') {
+      await bookingService.setInAttesa(booking.id);
+    }
     res.json({ orderID: order.id });
   } catch (err) {
     if (err.code === 'NO_PAYPAL_KEY') return res.status(503).json({ error: 'Pagamento PayPal non configurato' });
