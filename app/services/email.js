@@ -55,4 +55,22 @@ async function sendBulkNewsletter(oggetto, corpo, recipients) {
   return inviati;
 }
 
-module.exports = { sendConfirmationEmail, sendBulkNewsletter };
+async function sendBookingConfirmation(to, nome, booking, evento) {
+  const html = await ejs.renderFile(
+    path.join(__dirname, '../views/emails/conferma-prenotazione.ejs'),
+    { nome, booking, evento }
+  );
+  if (!process.env.SMTP_HOST) {
+    console.log(`[EMAIL] Conferma prenotazione #${booking.id} per ${to}`);
+    return;
+  }
+  await createTransporter().sendMail({
+    from: `"Orchidea" <${process.env.SMTP_USER}>`,
+    to,
+    subject: `Prenotazione confermata — ${evento.titolo}`,
+    html,
+    text: `Ciao ${nome}, prenotazione #${booking.id} per ${evento.titolo} confermata. Importo: €${booking.importo}`,
+  });
+}
+
+module.exports = { sendConfirmationEmail, sendBulkNewsletter, sendBookingConfirmation };

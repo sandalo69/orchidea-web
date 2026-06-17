@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { background:#0a0a0f; color:#e0e0e0; font-family:Arial,sans-serif; margin:0; padding:0; }
+    .container { max-width:600px; margin:0 auto; padding:2rem; }
+    .logo { font-size:1.5rem; font-weight:900; color:#9d00ff; }
+    .card { background:#13131f; border:1px solid #2a2a3a; border-radius:12px; padding:1.5rem; margin:1.5rem 0; }
+    .highlight { color:#00e5ff; }
+    .btn { display:inline-block; background:#9d00ff; color:#fff; text-decoration:none; padding:0.75rem 2rem; border-radius:8px; font-weight:700; margin-top:1rem; }
+    .footer { color:#555; font-size:0.8rem; margin-top:2rem; border-top:1px solid #2a2a3a; padding-top:1rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">🌸 ORCHIDEA</div>
+    <h2 style="color:#fff;margin-top:1.5rem;">Prenotazione confermata, <%= nome %>!</h2>
+    <p>Grazie per aver prenotato. Ecco i dettagli:</p>
+    <div class="card">
+      <p><strong>Evento:</strong> <span class="highlight"><%= evento.titolo %></span></p>
+      <p><strong>Data:</strong> <%= new Date(evento.data_evento).toLocaleDateString('it-IT', {weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) %></p>
+      <p><strong>Importo pagato:</strong> <span class="highlight">€<%= parseFloat(booking.importo).toFixed(2) %></span></p>
+      <p><strong>Riferimento prenotazione:</strong> #<%= booking.id %></p>
+    </div>
+    <p>Mostra questo riferimento all'ingresso. Ti aspettiamo!</p>
+    <a href="<%= process.env.BASE_URL %>/prenota/mie" class="btn">Visualizza prenotazione</a>
+    <div class="footer">
+      <p>Orchidea — Il club più esclusivo della città.</p>
+      <p>Non rispondere a questa email.</p>
+    </div>
+  </div>
+</body>
+</html>

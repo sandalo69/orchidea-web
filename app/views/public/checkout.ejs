@@ -1,0 +1,66 @@
+<%- include('_header', { title }) %>
+<div class="container" style="padding-top:2rem;max-width:700px;">
+  <h1 style="font-size:2rem;font-weight:900;margin-bottom:1.5rem;">Checkout</h1>
+
+  <% if (query.error) { %>
+    <div class="alert-error" style="margin-bottom:1rem;">
+      <%= query.error === 'pagamento_fallito' ? 'Pagamento non riuscito. Riprova.' : 'Errore durante il pagamento.' %>
+    </div>
+  <% } %>
+
+  <!-- Riepilogo prenotazione -->
+  <div class="card" style="margin-bottom:1.5rem;">
+    <h3 style="margin-bottom:1rem;">Riepilogo</h3>
+    <p><strong>Evento:</strong> <%= booking.evento_titolo %></p>
+    <p><strong>Data:</strong> <%= new Date(booking.data_evento).toLocaleDateString('it-IT', {weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) %></p>
+    <p><strong>Importo acconto:</strong> <span style="color:var(--neon-cyan);font-size:1.2rem;font-weight:700;">€<%= parseFloat(booking.importo).toFixed(2) %></span></p>
+    <% if (booking.scadenza_timer) { %>
+      <p style="color:var(--neon-yellow);font-size:0.9rem;margin-top:0.5rem;">
+        ⏱ Prenotazione riservata fino alle <%= new Date(booking.scadenza_timer).toLocaleTimeString('it-IT', {hour:'2-digit',minute:'2-digit'}) %>
+      </p>
+    <% } %>
+  </div>
+
+  <!-- Metodi di pagamento -->
+  <div class="card">
+    <div style="display:flex;gap:1rem;margin-bottom:1.5rem;border-bottom:1px solid var(--border);padding-bottom:1rem;">
+      <button onclick="showTab('stripe')" id="tab-stripe" class="btn btn-primary btn-sm">Carta di credito</button>
+      <% if (paypalClientId) { %>
+        <button onclick="showTab('paypal')" id="tab-paypal" class="btn btn-secondary btn-sm">PayPal</button>
+      <% } %>
+    </div>
+
+    <!-- Stripe tab -->
+    <div id="payment-stripe">
+      <% if (stripePublishableKey) { %>
+        <div id="stripe-payment-element" style="margin-bottom:1rem;"></div>
+        <div id="stripe-error" class="alert-error" style="display:none;margin-bottom:1rem;"></div>
+        <button id="stripe-submit" class="btn btn-primary" style="width:100%;">
+          Paga €<%= parseFloat(booking.importo).toFixed(2) %>
+        </button>
+      <% } else { %>
+        <p style="color:var(--text-muted);">Pagamento con carta non configurato.</p>
+      <% } %>
+    </div>
+
+    <!-- PayPal tab -->
+    <div id="payment-paypal" style="display:none;">
+      <div id="paypal-button-container"></div>
+    </div>
+  </div>
+</div>
+
+<% if (stripePublishableKey) { %>
+<script src="https://js.stripe.com/v3/"></script>
+<% } %>
+<% if (paypalClientId) { %>
+<script src="https://www.paypal.com/sdk/js?client-id=<%= paypalClientId %>&currency=EUR"></script>
+<% } %>
+<script>
+  var BOOKING_ID = '<%= booking.id %>';
+  var STRIPE_KEY = '<%= stripePublishableKey %>';
+  var PAYPAL_CLIENT_ID = '<%= paypalClientId %>';
+  var BOOKING_AMOUNT = '<%= parseFloat(booking.importo).toFixed(2) %>';
+</script>
+<script src="/js/checkout.js"></script>
+<%- include('_footer') %>
