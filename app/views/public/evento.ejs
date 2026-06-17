@@ -1,0 +1,30 @@
+<%- include('_header', { title }) %>
+<div class="container" style="padding-top:3rem;max-width:800px;">
+  <a href="/eventi" style="color:var(--text-muted);font-size:0.9rem;">← Tutti gli eventi</a>
+  <div style="margin-top:2rem;">
+    <div class="card-label">
+      <%= new Date(evento.data_evento).toLocaleDateString('it-IT', {weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) %>
+    </div>
+    <h1 style="font-size:2.5rem;font-weight:900;margin:0.5rem 0;"><%= evento.titolo %></h1>
+    <% if (evento.prenotazioni_aperte) { %>
+      <span class="badge badge-green" style="margin-bottom:1.5rem;display:inline-block;">Prenotazioni aperte</span>
+    <% } else { %>
+      <span class="badge badge-gray" style="margin-bottom:1.5rem;display:inline-block;">Prenotazioni chiuse</span>
+    <% } %>
+    <p style="line-height:1.8;color:var(--text-muted);font-size:1.05rem;margin-bottom:2rem;"><%= evento.descrizione || '' %></p>
+    <div class="card" style="display:inline-block;margin-bottom:2rem;">
+      <p>Acconto per posto: <strong style="color:var(--neon-cyan);">€<%= evento.costo_acconto %></strong></p>
+      <p>Max posti per utente: <strong><%= evento.max_posti_per_utente %></strong></p>
+    </div>
+    <% if (evento.prenotazioni_aperte) { %>
+      <div>
+        <% if (locals.user) { %>
+          <a href="/prenota/<%= evento.id %>" class="btn btn-primary">Prenota ora</a>
+        <% } else { %>
+          <a href="/auth/login" class="btn btn-primary">Accedi per prenotare</a>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+</div>
+<%- include('_footer') %>

@@ -1,0 +1,46 @@
+<%- include('_header', { title }) %>
+<div class="hero">
+  <h1>Benvenuto all'Orchidea</h1>
+  <p>La discoteca più esclusiva della città. Musica, atmosfera e notti indimenticabili.</p>
+  <a href="/eventi" class="btn btn-primary">Scopri gli eventi</a>
+</div>
+
+<section class="section">
+  <div class="container">
+    <div class="section-label">Prossimi appuntamenti</div>
+    <h2 class="section-title">Serate in arrivo</h2>
+    <% if (eventi.length === 0) { %>
+      <p style="color:var(--text-muted);">Nessun evento in programma al momento.</p>
+    <% } else { %>
+      <div class="grid grid-3">
+        <% eventi.forEach(ev => { %>
+          <a href="/eventi/<%= ev.id %>" class="card" style="display:block;">
+            <div class="card-label"><%= new Date(ev.data_evento).toLocaleDateString('it-IT', {weekday:'long',day:'numeric',month:'long'}) %></div>
+            <h3><%= ev.titolo %></h3>
+            <p><%= ev.descrizione ? ev.descrizione.substring(0,120) + '...' : '' %></p>
+            <p style="margin-top:1rem;color:var(--neon-cyan);">Acconto: €<%= ev.costo_acconto %>/posto</p>
+          </a>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<% if (news.length > 0) { %>
+<section class="section" style="padding-top:0;">
+  <div class="container">
+    <div class="section-label">Aggiornamenti</div>
+    <h2 class="section-title">News</h2>
+    <div class="grid grid-3">
+      <% news.forEach(n => { %>
+        <div class="card">
+          <div class="card-label"><%= new Date(n.created_at).toLocaleDateString('it-IT') %></div>
+          <h3><%= n.titolo %></h3>
+          <p><%= n.contenuto.substring(0,150) %></p>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+<%- include('_footer') %>

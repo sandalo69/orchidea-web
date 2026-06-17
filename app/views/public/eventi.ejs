@@ -1,0 +1,31 @@
+<%- include('_header', { title }) %>
+<div class="container" style="padding-top:3rem;">
+  <div class="section-label">Calendario</div>
+  <h1 class="section-title">Prossimi eventi</h1>
+  <% if (eventi.length === 0) { %>
+    <div class="card" style="text-align:center;padding:3rem;">
+      <p style="color:var(--text-muted);">Nessun evento programmato al momento. Torna presto!</p>
+    </div>
+  <% } else { %>
+    <div class="grid grid-2">
+      <% eventi.forEach(ev => { %>
+        <a href="/eventi/<%= ev.id %>" class="card" style="display:block;">
+          <div class="card-label">
+            <%= new Date(ev.data_evento).toLocaleDateString('it-IT', {weekday:'long',day:'numeric',month:'long',year:'numeric'}) %>
+          </div>
+          <h2 style="font-size:1.4rem;margin:0.5rem 0;"><%= ev.titolo %></h2>
+          <p><%= ev.descrizione ? ev.descrizione.substring(0,200) : '' %></p>
+          <div style="margin-top:1.2rem;display:flex;gap:1rem;align-items:center;">
+            <span style="color:var(--neon-cyan);">€<%= ev.costo_acconto %>/posto</span>
+            <% if (ev.prenotazioni_aperte) { %>
+              <span class="badge badge-green">Prenotazioni aperte</span>
+            <% } else { %>
+              <span class="badge badge-gray">Prenotazioni chiuse</span>
+            <% } %>
+          </div>
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+<%- include('_footer') %>

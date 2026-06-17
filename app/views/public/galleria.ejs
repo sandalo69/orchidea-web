@@ -1,0 +1,22 @@
+<%- include('_header', { title }) %>
+<div class="container" style="padding-top:3rem;">
+  <div class="section-label">Le nostre notti</div>
+  <h1 class="section-title">Galleria</h1>
+  <% if (foto.length === 0) { %>
+    <p style="color:var(--text-muted);">Nessuna foto disponibile.</p>
+  <% } else { %>
+    <div class="gallery-grid">
+      <% foto.forEach(f => { %>
+        <div class="gallery-item">
+          <img src="/uploads/<%= f.foto_path %>" alt="<%= f.didascalia || '' %>">
+          <% if (f.didascalia || f.evento_titolo) { %>
+            <p style="margin-top:0.4rem;font-size:0.8rem;color:var(--text-muted);">
+              <%= f.didascalia || '' %><% if (f.evento_titolo) { %> — <%= f.evento_titolo %><% } %>
+            </p>
+          <% } %>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+<%- include('_footer') %>
