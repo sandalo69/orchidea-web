@@ -89,8 +89,8 @@ app.get('/health', async (req, res) => {
 app.use('/', require('./routes/public'));
 app.use('/auth', require('./routes/auth'));
 app.use('/admin', require('./routes/admin'));
+app.use('/api', require('./routes/api'));
 // Piano 3: app.use('/prenota', require('./routes/booking'));
-// Piano 3: app.use('/api', require('./routes/api'));
 
 // 404
 app.use((req, res) => {
@@ -106,6 +106,9 @@ app.use((err, req, res, next) => {
 // ── Socket.io ──────────────────────────────────────────────
 // La logica completa viene aggiunta nel Piano 3
 io.on('connection', (socket) => {
+  socket.on('join:event', ({ eventId }) => {
+    if (eventId) socket.join(`event:${eventId}`);
+  });
   socket.on('disconnect', () => {});
 });
 
