@@ -58,7 +58,7 @@ async function sendBulkNewsletter(oggetto, corpo, recipients) {
 async function sendBookingConfirmation(to, nome, booking, evento) {
   const html = await ejs.renderFile(
     path.join(__dirname, '../views/emails/conferma-prenotazione.ejs'),
-    { nome, booking, evento }
+    { nome, booking, evento, baseUrl: process.env.BASE_URL || 'http://localhost' }
   );
   if (!process.env.SMTP_HOST) {
     console.log(`[EMAIL] Conferma prenotazione #${booking.id} per ${to}`);

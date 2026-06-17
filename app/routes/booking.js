@@ -33,6 +33,7 @@ router.get('/conferma', requireUser, async (req, res, next) => {
   try {
     const bookingId = parseInt(req.query.bookingId, 10);
     const booking = bookingId ? await bookingService.getById(bookingId) : null;
+    if (booking && booking.user_id !== req.session.userId) return res.status(403).redirect('/prenota/mie');
     res.render('public/booking-conferma', { title: 'Prenotazione confermata', booking });
   } catch (err) { next(err); }
 });
@@ -67,7 +68,7 @@ router.get('/checkout/:bookingId', requireUser, async (req, res, next) => {
 router.post('/checkout/:bookingId/stripe', requireUser, async (req, res, next) => {
   try {
     const booking = await bookingService.getById(parseInt(req.params.bookingId, 10));
-    if (!booking || booking.user_id !== req.session.userId || booking.stato === 'annullata') {
+    if (!booking || booking.user_id !== req.session.userId || booking.stato === 'annullata' || booking.stato === 'confermata' || booking.stato === 'in_attesa') {
       return res.status(400).json({ error: 'Prenotazione non valida' });
     }
     const returnUrl = `${process.env.BASE_URL}/prenota/checkout/${booking.id}/stripe/return`;
@@ -87,18 +88,17 @@ router.get('/checkout/:bookingId/stripe/return', requireUser, async (req, res, n
     if (redirect_status !== 'succeeded') {
       return res.redirect(`/prenota/checkout/${req.params.bookingId}?error=pagamento_fallito`);
     }
+    const booking = await bookingService.getById(parseInt(req.params.bookingId, 10));
+    if (!booking || booking.user_id !== req.session.userId) return res.status(404).render('public/404', { title: '404' });
     const intent = await paymentService.retrieveStripeIntent(payment_intent);
     if (intent.status !== 'succeeded') {
       return res.redirect(`/prenota/checkout/${req.params.bookingId}?error=pagamento_non_completato`);
     }
-    const booking = await bookingService.confirm(parseInt(req.params.bookingId, 10), 'stripe', payment_intent);
-    const fullBooking = await bookingService.getById(booking.id);
-    req.app.get('io').to(`event:${booking.event_id}`).emit('seats:update', { eventId: booking.event_id });
-    await sendBookingConfirmation(
-      fullBooking.user_email, fullBooking.user_nome,
-      fullBooking, { titolo: fullBooking.evento_titolo, data_evento: fullBooking.data_evento }
-    );
-    res.redirect(`/prenota/conferma?bookingId=${booking.id}`);
+    const confirmedBooking = await bookingService.confirm(parseInt(req.params.bookingId, 10), 'stripe', payment_intent);
+    const fullBooking = await bookingService.getById(confirmedBooking.id);
+    req.app.get('io').to(`event:${confirmedBooking.event_id}`).emit('seats:update', { eventId: confirmedBooking.event_id });
+    sendBookingConfirmation(fullBooking.user_email, fullBooking.user_nome, fullBooking, { titolo: fullBooking.evento_titolo, data_evento: fullBooking.data_evento }).catch(err => console.error('[EMAIL] Conferma fallita:', err.message));
+    res.redirect(`/prenota/conferma?bookingId=${confirmedBooking.id}`);
   } catch (err) { next(err); }
 });
 
@@ -106,7 +106,7 @@ router.get('/checkout/:bookingId/stripe/return', requireUser, async (req, res, n
 router.post('/checkout/:bookingId/paypal', requireUser, async (req, res, next) => {
   try {
     const booking = await bookingService.getById(parseInt(req.params.bookingId, 10));
-    if (!booking || booking.user_id !== req.session.userId || booking.stato === 'annullata') {
+    if (!booking || booking.user_id !== req.session.userId || booking.stato === 'annullata' || booking.stato === 'confermata' || booking.stato === 'in_attesa') {
       return res.status(400).json({ error: 'Prenotazione non valida' });
     }
     const order = await paymentService.createPayPalOrder(booking.id, parseFloat(booking.importo));
@@ -130,10 +130,7 @@ router.post('/checkout/:bookingId/paypal/capture', requireUser, async (req, res,
     const booking = await bookingService.confirm(parseInt(req.params.bookingId, 10), 'paypal', orderID);
     const fullBooking = await bookingService.getById(booking.id);
     req.app.get('io').to(`event:${booking.event_id}`).emit('seats:update', { eventId: booking.event_id });
-    await sendBookingConfirmation(
-      fullBooking.user_email, fullBooking.user_nome,
-      fullBooking, { titolo: fullBooking.evento_titolo, data_evento: fullBooking.data_evento }
-    );
+    sendBookingConfirmation(fullBooking.user_email, fullBooking.user_nome, fullBooking, { titolo: fullBooking.evento_titolo, data_evento: fullBooking.data_evento }).catch(err => console.error('[EMAIL] Conferma fallita:', err.message));
     res.json({ success: true, bookingId: booking.id });
   } catch (err) { next(err); }
 });

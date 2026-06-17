@@ -24,7 +24,12 @@ if (typeof STRIPE_KEY !== 'undefined' && STRIPE_KEY) {
       var paymentEl = elements.create('payment');
       paymentEl.mount('#stripe-payment-element');
     })
-    .catch(function (err) { console.error('Stripe init error:', err); });
+    .catch(function(err) {
+      console.error(err);
+      var errEl = document.getElementById('stripe-error');
+      if (errEl) { errEl.textContent = 'Errore di rete. Riprova.'; errEl.style.display = 'block'; }
+      document.getElementById('stripe-submit').disabled = false;
+    });
 
   var stripeBtn = document.getElementById('stripe-submit');
   if (stripeBtn) {
