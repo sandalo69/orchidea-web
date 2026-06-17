@@ -1,0 +1,66 @@
+<%- include('_header', { title }) %>
+<div class="container" style="padding-top:2rem;max-width:900px;">
+  <h1 style="font-size:2rem;font-weight:900;margin-bottom:1.5rem;">Le mie prenotazioni</h1>
+
+  <% if (query.success === 'annullata') { %>
+    <div class="alert-success" style="margin-bottom:1rem;">Prenotazione annullata.</div>
+  <% } %>
+  <% if (query.error) { %>
+    <div class="alert-error" style="margin-bottom:1rem;">Errore: <%= query.error %></div>
+  <% } %>
+
+  <!-- Prenotazioni esistenti -->
+  <% if (bookings.length === 0) { %>
+    <div class="card" style="text-align:center;padding:3rem;color:var(--text-muted);">
+      Nessuna prenotazione ancora.
+    </div>
+  <% } else { %>
+    <div class="card" style="padding:0;margin-bottom:2rem;">
+      <table>
+        <thead><tr><th>Evento</th><th>Data</th><th>Importo</th><th>Stato</th><th></th></tr></thead>
+        <tbody>
+          <% bookings.forEach(b => { %>
+          <tr>
+            <td><strong><%= b.evento_titolo %></strong></td>
+            <td><%= new Date(b.data_evento).toLocaleDateString('it-IT') %></td>
+            <td><strong>€<%= parseFloat(b.importo).toFixed(2) %></strong></td>
+            <td>
+              <span class="badge <%= b.stato === 'confermata' ? 'badge-green' : b.stato === 'annullata' ? 'badge-gray' : 'badge-yellow' %>">
+                <%= b.stato %>
+              </span>
+            </td>
+            <td>
+              <% if (b.stato === 'temporanea' || b.stato === 'in_attesa') { %>
+                <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+                  <% if (b.stato === 'temporanea') { %>
+                    <a href="/prenota/checkout/<%= b.id %>" class="btn btn-sm btn-primary">Paga</a>
+                  <% } %>
+                  <form method="POST" action="/prenota/<%= b.id %>/annulla" onsubmit="return confirm('Annullare?')">
+                    <button class="btn btn-sm btn-danger">Annulla</button>
+                  </form>
+                </div>
+              <% } %>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+
+  <!-- Eventi disponibili per prenotare -->
+  <% if (eventi.length > 0) { %>
+    <h2 style="font-size:1.3rem;margin-bottom:1rem;">Prenota un evento</h2>
+    <div class="grid-2">
+      <% eventi.forEach(e => { %>
+        <div class="card">
+          <p class="card-label"><%= new Date(e.data_evento).toLocaleDateString('it-IT', {weekday:'short',day:'numeric',month:'short'}) %></p>
+          <h3 style="margin:0.5rem 0;"><%= e.titolo %></h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;">Acconto: €<%= e.costo_acconto %>/posto</p>
+          <a href="/prenota/<%= e.id %>" class="btn btn-primary btn-sm" style="margin-top:0.5rem;">Prenota</a>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+<%- include('_footer') %>

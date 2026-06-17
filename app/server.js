@@ -90,7 +90,7 @@ app.use('/', require('./routes/public'));
 app.use('/auth', require('./routes/auth'));
 app.use('/admin', require('./routes/admin'));
 app.use('/api', require('./routes/api'));
-// Piano 3: app.use('/prenota', require('./routes/booking'));
+app.use('/prenota', require('./routes/booking'));
 
 // 404
 app.use((req, res) => {

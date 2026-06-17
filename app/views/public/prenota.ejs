@@ -1,0 +1,61 @@
+<%- include('_header', { title }) %>
+<div class="container" style="padding-top:2rem;max-width:900px;">
+  <a href="/eventi/<%= event.id %>" style="color:var(--text-muted);font-size:0.9rem;">← <%= event.titolo %></a>
+  <h1 style="font-size:2rem;font-weight:900;margin:1rem 0;">Scegli i tuoi posti</h1>
+
+  <% if (query.error) { %>
+    <div class="alert-error" style="margin-bottom:1rem;">
+      <%= query.msg ? decodeURIComponent(query.msg) : 'Errore nella selezione.' %>
+    </div>
+  <% } %>
+
+  <div class="card" style="margin-bottom:1.5rem;padding:1rem;">
+    <p style="color:var(--text-muted);font-size:0.9rem;margin:0;">
+      Acconto: <strong style="color:var(--neon-cyan);">€<%= event.costo_acconto %>/posto</strong> &nbsp;·&nbsp;
+      Max posti per utente: <strong><%= event.max_posti_per_utente %></strong> &nbsp;·&nbsp;
+      La prenotazione scade in <strong>15 minuti</strong> se non pagata.
+    </p>
+  </div>
+
+  <!-- Legenda -->
+  <div style="display:flex;gap:1.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+    <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+      <svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="none" stroke="var(--neon-cyan)" stroke-width="2"/></svg>
+      Disponibile
+    </span>
+    <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+      <svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="var(--neon-purple)" stroke="var(--neon-fuchsia)" stroke-width="2"/></svg>
+      Selezionato
+    </span>
+    <span style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;">
+      <svg width="20" height="20"><circle cx="10" cy="10" r="8" fill="#333" stroke="#555" stroke-width="1"/></svg>
+      Occupato
+    </span>
+  </div>
+
+  <!-- Mappa SVG -->
+  <div class="card" style="padding:0.5rem;overflow:auto;">
+    <svg id="seat-map-svg"
+         viewBox="0 0 800 600"
+         style="width:100%;min-width:320px;background:#0d0d14;border-radius:8px;"
+         data-event-id="<%= event.id %>"
+         data-max-seats="<%= event.max_posti_per_utente %>">
+      <text x="400" y="300" text-anchor="middle" fill="#444" font-size="16">Caricamento mappa...</text>
+    </svg>
+  </div>
+
+  <!-- Form prenotazione -->
+  <form id="booking-form" method="POST" action="/prenota/<%= event.id %>" style="margin-top:1.5rem;">
+    <input type="hidden" name="seat_ids" id="seat-ids-input" value="">
+    <div style="display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+      <p style="margin:0;">Posti selezionati: <strong id="selected-count">0</strong></p>
+      <button type="submit" id="submit-booking" class="btn btn-primary" disabled>
+        Conferma selezione →
+      </button>
+    </div>
+  </form>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/seat-map.js"></script>
+<%- include('_footer') %>
