@@ -6,6 +6,9 @@ const db = require('../db');
 const verifyCaptcha = require('../middleware/captcha');
 const { sendConfirmationEmail } = require('../services/email');
 
+// Hash placeholder per prevenire timing attack su email inesistente
+const DUMMY_HASH = '$2b$12$invalidhashpaddingtomatchbcryptcost12xx';
+
 router.get('/registra', (req, res) => {
   res.render('public/registra', { title: 'Registrati', query: req.query });
 });
@@ -63,9 +66,15 @@ router.post('/login', async (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) return res.redirect('/auth/login?error=campi_mancanti');
   try {
-    const { rows } = await db.query('SELECT * FROM users WHERE email = $1', [email.toLowerCase()]);
+    const { rows } = await db.query(
+      'SELECT id, nome, password_hash, confermato FROM users WHERE email = $1',
+      [email.toLowerCase()]
+    );
     const user = rows[0];
-    if (!user || !await bcrypt.compare(password, user.password_hash)) {
+    // Sempre esegue bcrypt per prevenire timing attack su email enumeration
+    const hashToCompare = user ? user.password_hash : DUMMY_HASH;
+    const valid = await bcrypt.compare(password, hashToCompare);
+    if (!user || !valid) {
       return res.redirect('/auth/login?error=credenziali');
     }
     if (!user.confermato) {
@@ -73,8 +82,10 @@ router.post('/login', async (req, res, next) => {
     }
     req.session.userId = user.id;
     req.session.userName = user.nome;
-    const returnTo = req.session.returnTo && req.session.returnTo.startsWith('/')
-      ? req.session.returnTo
+    // Previene open redirect: rifiuta URL assoluti (// o http://)
+    const rawReturn = req.session.returnTo;
+    const returnTo = rawReturn && rawReturn.startsWith('/') && !rawReturn.startsWith('//')
+      ? rawReturn
       : '/';
     delete req.session.returnTo;
     res.redirect(returnTo);
@@ -84,7 +95,10 @@ router.post('/login', async (req, res, next) => {
 });
 
 router.post('/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/'));
+  req.session.destroy((err) => {
+    if (err) console.error('Errore distruzione sessione:', err.message);
+    res.redirect('/');
+  });
 });
 
 module.exports = router;
