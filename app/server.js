@@ -58,10 +58,19 @@ app.use(express.urlencoded({ extended: true }));
 
 // File statici
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Template engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// Dati condivisi con tutte le views
+app.use((req, res, next) => {
+  res.locals.user = req.session.userId
+    ? { id: req.session.userId, nome: req.session.userName }
+    : null;
+  next();
+});
 
 // Rende io disponibile nei route handlers
 app.set('io', io);
@@ -77,15 +86,15 @@ app.get('/health', async (req, res) => {
   }
 });
 
-// Le route vere vengono aggiunte nei Piani 2 e 3
-// app.use('/', require('./routes/public'));
-// app.use('/auth', require('./routes/auth'));
-// app.use('/admin', require('./routes/admin'));
-// app.use('/prenota', require('./routes/booking'));
+app.use('/', require('./routes/public'));
+app.use('/auth', require('./routes/auth'));
+app.use('/admin', require('./routes/admin'));
+// Piano 3: app.use('/prenota', require('./routes/booking'));
+// Piano 3: app.use('/api', require('./routes/api'));
 
 // 404
 app.use((req, res) => {
-  res.status(404).json({ error: 'Not found' });
+  res.status(404).render('public/404', { title: '404' });
 });
 
 // Error handler
