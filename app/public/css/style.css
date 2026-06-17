@@ -110,6 +110,13 @@ tr:hover td{background:rgba(157,0,255,0.04);}
 /* Footer */
 footer{background:var(--bg-card);border-top:1px solid var(--border);padding:2rem;text-align:center;color:var(--text-muted);font-size:0.85rem;margin-top:4rem;}
 
+/* Mobile nav toggle button */
+.nav-toggle{display:none;background:none;border:1px solid var(--border);color:var(--text-primary);padding:0.4rem 0.7rem;border-radius:4px;cursor:pointer;font-size:1.1rem;}
+
+/* Logout button styled as nav link */
+.btn-logout{background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.9rem;margin-left:1.5rem;padding:0;font-family:inherit;}
+.btn-logout:hover{color:#ff4466;}
+
 /* Responsive */
 @media(max-width:768px){
   .hero h1{font-size:2rem;}
@@ -117,4 +124,6 @@ footer{background:var(--bg-card);border-top:1px solid var(--border);padding:2rem
   .sidebar{display:none;}
   .grid-3,.grid-2{grid-template-columns:1fr;}
   .nav-links{display:none;}
+  .nav-toggle{display:block;}
+  .nav-links.open{display:flex;flex-direction:column;position:absolute;top:60px;left:0;right:0;background:rgba(10,10,15,0.98);padding:1rem 2rem;gap:0.8rem;border-bottom:1px solid var(--border);}
 }
