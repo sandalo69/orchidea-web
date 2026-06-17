@@ -1,0 +1,15 @@
+<%- include('_header', { title }) %>
+<div style="text-align:center;padding:5rem 2rem;">
+  <% if (success) { %>
+    <div style="font-size:4rem;margin-bottom:1rem;">✅</div>
+    <h1 style="font-size:2rem;color:var(--neon-cyan);margin-bottom:1rem;">Account confermato!</h1>
+    <p style="color:var(--text-muted);margin-bottom:2rem;">Il tuo account è attivo. Puoi ora accedere.</p>
+    <a href="/auth/login" class="btn btn-primary">Accedi ora</a>
+  <% } else { %>
+    <div style="font-size:4rem;margin-bottom:1rem;">❌</div>
+    <h1 style="font-size:2rem;color:#ff4466;margin-bottom:1rem;">Link non valido</h1>
+    <p style="color:var(--text-muted);margin-bottom:2rem;">Il link di conferma è scaduto o non valido.</p>
+    <a href="/auth/registra" class="btn btn-secondary">Registrati di nuovo</a>
+  <% } %>
+</div>
+<%- include('_footer') %>
