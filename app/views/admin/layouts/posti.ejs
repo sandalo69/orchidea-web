@@ -1,0 +1,94 @@
+<%- include('../_header', { title, active }) %>
+<div class="page-header">
+  <h1>Posti — <%= layout.nome %></h1>
+  <a href="/admin/layouts" class="btn btn-secondary">← Planimetrie</a>
+</div>
+
+<% if (query.error) { %>
+  <div class="alert-error">Compila tutti i campi.</div>
+<% } %>
+<% if (query.success) { %>
+  <div class="alert-success">Posto aggiunto.</div>
+<% } %>
+
+<div class="grid-2" style="gap:2rem;align-items:start;">
+  <!-- Anteprima SVG -->
+  <div class="card" style="padding:1rem;">
+    <h3 style="margin-bottom:1rem;font-size:1rem;color:var(--text-muted);">Anteprima planimetria</h3>
+    <svg viewBox="0 0 800 600" style="width:100%;border:1px solid var(--border);border-radius:8px;background:#0d0d14;">
+      <% seats.forEach(s => { %>
+        <% const r = s.tipo === 'posto_singolo' ? 14 : s.tipo === 'poltroncina_3' ? 18 : 22; %>
+        <circle cx="<%= s.pos_x %>" cy="<%= s.pos_y %>" r="<%= r %>"
+          fill="none" stroke="var(--neon-cyan)" stroke-width="2"/>
+        <text x="<%= s.pos_x %>" y="<%= s.pos_y + 4 %>" text-anchor="middle"
+          font-size="10" fill="var(--neon-cyan)"><%= s.etichetta %></text>
+      <% }) %>
+    </svg>
+    <p style="color:var(--text-muted);font-size:0.8rem;margin-top:0.5rem;">Coordinate: x 0–800, y 0–600</p>
+  </div>
+
+  <!-- Form aggiunta posto -->
+  <div>
+    <div class="form-card">
+      <h3 style="margin-bottom:1.5rem;">Aggiungi posto</h3>
+      <form method="POST" action="/admin/layouts/<%= layout.id %>/posti">
+        <div class="form-group">
+          <label>Etichetta (es. T1, A3)</label>
+          <input type="text" name="etichetta" required maxlength="20">
+        </div>
+        <div class="form-group">
+          <label>Tipo</label>
+          <select name="tipo">
+            <option value="tavolo_tondo">Tavolo tondo</option>
+            <option value="poltroncina_3">Poltroncina (3 posti)</option>
+            <option value="posto_singolo">Posto singolo</option>
+          </select>
+        </div>
+        <div class="grid-2" style="gap:1rem;">
+          <div class="form-group">
+            <label>Posizione X (0–800)</label>
+            <input type="number" name="pos_x" min="0" max="800" required>
+          </div>
+          <div class="form-group">
+            <label>Posizione Y (0–600)</label>
+            <input type="number" name="pos_y" min="0" max="600" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Capienza (persone per posto)</label>
+          <input type="number" name="capienza" min="1" max="20" value="1" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Aggiungi posto</button>
+      </form>
+    </div>
+
+    <!-- Lista posti -->
+    <% if (seats.length > 0) { %>
+    <div class="card" style="padding:0;margin-top:1.5rem;">
+      <table>
+        <thead><tr><th>Etichetta</th><th>Tipo</th><th>X</th><th>Y</th><th>Cap.</th><th></th></tr></thead>
+        <tbody>
+          <% seats.forEach(s => { %>
+          <tr>
+            <td><strong><%= s.etichetta %></strong></td>
+            <td><%= s.tipo %></td>
+            <td><%= s.pos_x %></td>
+            <td><%= s.pos_y %></td>
+            <td><%= s.capienza %></td>
+            <td>
+              <form method="POST" action="/admin/layouts/<%= layout.id %>/posti/<%= s.id %>/elimina"
+                    onsubmit="return confirm('Eliminare il posto <%= s.etichetta %>?')">
+                <button class="btn btn-sm btn-danger">Elimina</button>
+              </form>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+    <% } else { %>
+    <p style="color:var(--text-muted);margin-top:1rem;">Nessun posto configurato.</p>
+    <% } %>
+  </div>
+</div>
+<%- include('../_footer') %>

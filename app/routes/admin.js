@@ -214,6 +214,41 @@ router.post('/layouts/:id/elimina', requireAdmin, async (req, res, next) => {
   }
 });
 
+// ── Layouts: gestione posti ─────────────────────────────────────────────────
+
+router.get('/layouts/:id/posti', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows: [layout] } = await db.query('SELECT * FROM layouts WHERE id = $1', [req.params.id]);
+    if (!layout) return res.redirect('/admin/layouts');
+    const { rows: seats } = await db.query(
+      'SELECT * FROM seats WHERE layout_id = $1 ORDER BY etichetta',
+      [req.params.id]
+    );
+    res.render('admin/layouts/posti', { title: `Posti — ${layout.nome}`, active: 'layouts', layout, seats, query: req.query });
+  } catch (err) { next(err); }
+});
+
+router.post('/layouts/:id/posti', requireAdmin, async (req, res, next) => {
+  const { tipo, pos_x, pos_y, capienza, etichetta } = req.body;
+  if (!tipo || !pos_x || !pos_y || !capienza || !etichetta) {
+    return res.redirect(`/admin/layouts/${req.params.id}/posti?error=campi_mancanti`);
+  }
+  try {
+    await db.query(
+      'INSERT INTO seats (layout_id, tipo, pos_x, pos_y, capienza, etichetta) VALUES ($1,$2,$3,$4,$5,$6)',
+      [req.params.id, tipo, parseInt(pos_x, 10), parseInt(pos_y, 10), parseInt(capienza, 10), etichetta.trim()]
+    );
+    res.redirect(`/admin/layouts/${req.params.id}/posti?success=aggiunto`);
+  } catch (err) { next(err); }
+});
+
+router.post('/layouts/:id/posti/:seatId/elimina', requireAdmin, async (req, res, next) => {
+  try {
+    await db.query('DELETE FROM seats WHERE id = $1 AND layout_id = $2', [req.params.seatId, req.params.id]);
+    res.redirect(`/admin/layouts/${req.params.id}/posti`);
+  } catch (err) { next(err); }
+});
+
 // ── CRUD: DJ ───────────────────────────────────────────────────────────────
 
 router.get('/dj', requireAdmin, async (req, res, next) => {
