@@ -11,9 +11,12 @@
       <div>
         <img src="/uploads/<%= f.foto_path %>" alt="<%= f.didascalia || '' %>" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;border:1px solid var(--border);">
         <p style="font-size:0.8rem;color:var(--text-muted);margin:0.3rem 0;"><%= f.didascalia || '' %><% if (f.evento_titolo) { %> — <%= f.evento_titolo %><% } %></p>
-        <form method="POST" action="/admin/galleria/<%= f.id %>/elimina" onsubmit="return confirm('Eliminare foto?')">
-          <button class="btn btn-sm btn-danger">Elimina</button>
-        </form>
+        <div style="display:flex;gap:0.5rem;margin-top:0.5rem;">
+          <a href="/admin/galleria/<%= f.id %>/modifica" class="btn btn-sm btn-secondary">Modifica</a>
+          <form method="POST" action="/admin/galleria/<%= f.id %>/elimina" onsubmit="return confirm('Eliminare foto?')">
+            <button class="btn btn-sm btn-danger">Elimina</button>
+          </form>
+        </div>
       </div>
     <% }) %>
   </div>

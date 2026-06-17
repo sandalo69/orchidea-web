@@ -42,9 +42,12 @@ router.post('/login', async (req, res, next) => {
     if (!admin || !await bcrypt.compare(password, admin.password_hash)) {
       return res.redirect('/admin/login?error=credenziali');
     }
-    req.session.adminId = admin.id;
-    req.session.adminEmail = admin.email;
-    res.redirect('/admin');
+    req.session.regenerate((err) => {
+      if (err) return next(err);
+      req.session.adminId = admin.id;
+      req.session.adminEmail = admin.email;
+      res.redirect('/admin');
+    });
   } catch (err) {
     next(err);
   }
@@ -317,6 +320,37 @@ router.post('/galleria', requireAdmin, upload.single('foto'), async (req, res, n
   }
 });
 
+router.get('/galleria/:id/modifica', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows: [foto] } = await db.query('SELECT * FROM gallery WHERE id = $1', [req.params.id]);
+    if (!foto) return res.redirect('/admin/galleria');
+    const { rows: eventi } = await db.query('SELECT id, titolo FROM events ORDER BY data_evento DESC');
+    res.render('admin/galleria/form', { title: 'Modifica foto', active: 'galleria', foto, eventi, query: req.query });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/galleria/:id', requireAdmin, upload.single('foto'), async (req, res, next) => {
+  const { didascalia, event_id } = req.body;
+  try {
+    if (req.file) {
+      await db.query(
+        'UPDATE gallery SET foto_path=$1, didascalia=$2, event_id=$3 WHERE id=$4',
+        [req.file.filename, didascalia || null, event_id || null, req.params.id]
+      );
+    } else {
+      await db.query(
+        'UPDATE gallery SET didascalia=$1, event_id=$2 WHERE id=$3',
+        [didascalia || null, event_id || null, req.params.id]
+      );
+    }
+    res.redirect('/admin/galleria');
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post('/galleria/:id/elimina', requireAdmin, async (req, res, next) => {
   try {
     await db.query('DELETE FROM gallery WHERE id = $1', [req.params.id]);
@@ -416,7 +450,7 @@ router.get('/prenotazioni', requireAdmin, async (req, res, next) => {
 router.post('/prenotazioni/:id/approva', requireAdmin, async (req, res, next) => {
   try {
     await db.query("UPDATE bookings SET stato = 'confermata' WHERE id = $1", [req.params.id]);
-    res.redirect('back');
+    res.redirect('/admin/prenotazioni');
   } catch (err) {
     next(err);
   }
@@ -425,7 +459,7 @@ router.post('/prenotazioni/:id/approva', requireAdmin, async (req, res, next) =>
 router.post('/prenotazioni/:id/rifiuta', requireAdmin, async (req, res, next) => {
   try {
     await db.query("UPDATE bookings SET stato = 'annullata' WHERE id = $1", [req.params.id]);
-    res.redirect('back');
+    res.redirect('/admin/prenotazioni');
   } catch (err) {
     next(err);
   }
