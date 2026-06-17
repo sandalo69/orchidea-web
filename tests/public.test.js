@@ -3,7 +3,7 @@ process.env.DB_HOST = process.env.DB_HOST || 'localhost';
 process.env.DB_PORT = process.env.DB_PORT || '5432';
 process.env.DB_NAME = process.env.DB_NAME || 'orchidea';
 process.env.DB_USER = process.env.DB_USER || 'orchidea_user';
-process.env.DB_PASSWORD = process.env.DB_PASSWORD || 'Orchidea_DB_2026!';
+process.env.DB_PASSWORD = process.env.DB_PASSWORD || '';
 process.env.BASE_URL = 'http://localhost';
 
 const request = require('supertest');
