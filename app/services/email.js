@@ -26,24 +26,33 @@ async function sendConfirmationEmail(to, nome, token) {
     to,
     subject: 'Conferma il tuo account Orchidea',
     html,
+    text: `Ciao ${nome},\n\nConferma il tuo account: ${link}\n\nIl link scade in 24 ore.`,
   });
 }
 
+// corpo deve essere HTML già sanitizzato dal chiamante (admin autenticato)
 async function sendBulkNewsletter(oggetto, corpo, recipients) {
+  if (!Array.isArray(recipients)) return 0;
   if (!process.env.SMTP_HOST) {
     console.log(`[EMAIL] Newsletter "${oggetto}" a ${recipients.length} utenti`);
     return recipients.length;
   }
   const t = createTransporter();
+  let inviati = 0;
   for (const { email } of recipients) {
-    await t.sendMail({
-      from: `"Orchidea" <${process.env.SMTP_USER}>`,
-      to: email,
-      subject: oggetto,
-      html: corpo,
-    });
+    try {
+      await t.sendMail({
+        from: `"Orchidea" <${process.env.SMTP_USER}>`,
+        to: email,
+        subject: oggetto,
+        html: corpo,
+      });
+      inviati++;
+    } catch (err) {
+      console.error(`[EMAIL] Errore invio newsletter a ${email}:`, err.message);
+    }
   }
-  return recipients.length;
+  return inviati;
 }
 
 module.exports = { sendConfirmationEmail, sendBulkNewsletter };
