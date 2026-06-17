@@ -21,7 +21,27 @@
       "Bash(npm install *)",
       "Bash(npm test *)",
       "Bash(npx jest *)",
-      "Bash(NODE_PATH=/mnt/c/progetti/CLAUDE/sito/app/node_modules npx jest --roots /mnt/c/progetti/CLAUDE/sito/tests --testPathPattern=health.test.js --runInBand --forceExit)"
+      "Bash(NODE_PATH=/mnt/c/progetti/CLAUDE/sito/app/node_modules npx jest --roots /mnt/c/progetti/CLAUDE/sito/tests --testPathPattern=health.test.js --runInBand --forceExit)",
+      "Bash(gh auth *)",
+      "Bash(gh repo *)",
+      "Skill(code-review)",
+      "Bash(xargs ls -la)",
+      "Bash(node *)",
+      "Bash(grep '\\\\.ejs$')",
+      "Bash(SESSION_SECRET=test_secret timeout 30 npm test)",
+      "Bash(docker compose up *)",
+      "Bash(curl -s http://localhost/health)",
+      "Bash(curl -s http://localhost/)",
+      "Bash(curl -sI http://localhost/auth/login)",
+      "Bash(curl -sI http://localhost/admin/login)",
+      "Bash(docker compose down *)",
+      "Bash(docker compose *)",
+      "Bash(DB_HOST=localhost DB_PORT=5432 DB_NAME=orchidea DB_USER=orchidea_user DB_PASSWORD='Orchidea_DB_2026!' npm test --prefix /mnt/c/progetti/CLAUDE/sito/app)",
+      "Bash(DB_HOST=localhost DB_PORT=5432 DB_NAME=orchidea DB_USER=orchidea_user DB_PASSWORD='Orchidea_DB_2026!' npm test --prefix /mnt/c/progetti/CLAUDE/sito/app -- --testPathPattern=auth)",
+      "Bash(DB_HOST=localhost DB_PORT=5432 DB_NAME=orchidea DB_USER=orchidea_user DB_PASSWORD='Orchidea_DB_2026!' npm test --prefix /mnt/c/progetti/CLAUDE/sito/app -- --testPathPattern=auth --verbose)",
+      "Bash(curl -s -X POST http://localhost/auth/registra -H 'Content-Type: application/x-www-form-urlencoded' -d 'nome=Mario&cognome=Rossi&email=test@test.com&telefono=1234567890&password=password123' -w '\\\\nHTTP: %{http_code}' -L)",
+      "Read(//home/andalos/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/subagent-driven-development/**)",
+      "Bash(grep -E '\\\\.\\(js|ejs|sql\\)$')"
     ]
   }
 }

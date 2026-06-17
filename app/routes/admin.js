@@ -229,14 +229,23 @@ router.get('/layouts/:id/posti', requireAdmin, async (req, res, next) => {
 });
 
 router.post('/layouts/:id/posti', requireAdmin, async (req, res, next) => {
-  const { tipo, pos_x, pos_y, capienza, etichetta } = req.body;
-  if (!tipo || !pos_x || !pos_y || !capienza || !etichetta) {
+  const TIPI = ['tavolo_tondo', 'poltroncina_3', 'posto_singolo'];
+  const etichetta = (req.body.etichetta || '').trim();
+  const tipo = req.body.tipo;
+  const x = parseInt(req.body.pos_x, 10);
+  const y = parseInt(req.body.pos_y, 10);
+  const cap = parseInt(req.body.capienza, 10);
+
+  if (!etichetta || !TIPI.includes(tipo) || isNaN(x) || isNaN(y) || isNaN(cap)
+      || x < 0 || x > 800 || y < 0 || y > 600 || cap < 1 || cap > 20) {
     return res.redirect(`/admin/layouts/${req.params.id}/posti?error=campi_mancanti`);
   }
   try {
+    const { rows: [layout] } = await db.query('SELECT id FROM layouts WHERE id = $1', [req.params.id]);
+    if (!layout) return res.redirect('/admin/layouts');
     await db.query(
       'INSERT INTO seats (layout_id, tipo, pos_x, pos_y, capienza, etichetta) VALUES ($1,$2,$3,$4,$5,$6)',
-      [req.params.id, tipo, parseInt(pos_x, 10), parseInt(pos_y, 10), parseInt(capienza, 10), etichetta.trim()]
+      [req.params.id, tipo, x, y, cap, etichetta]
     );
     res.redirect(`/admin/layouts/${req.params.id}/posti?success=aggiunto`);
   } catch (err) { next(err); }
@@ -244,7 +253,10 @@ router.post('/layouts/:id/posti', requireAdmin, async (req, res, next) => {
 
 router.post('/layouts/:id/posti/:seatId/elimina', requireAdmin, async (req, res, next) => {
   try {
-    await db.query('DELETE FROM seats WHERE id = $1 AND layout_id = $2', [req.params.seatId, req.params.id]);
+    const result = await db.query('DELETE FROM seats WHERE id = $1 AND layout_id = $2', [req.params.seatId, req.params.id]);
+    if (result.rowCount === 0) {
+      return res.redirect(`/admin/layouts/${req.params.id}/posti?error=posto_non_trovato`);
+    }
     res.redirect(`/admin/layouts/${req.params.id}/posti`);
   } catch (err) { next(err); }
 });
