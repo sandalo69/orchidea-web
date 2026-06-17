@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' — ' : '' %>Admin Orchidea</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="admin-layout">
+  <nav class="sidebar">
+    <div class="sidebar-logo">🌸 Admin</div>
+    <a href="/admin" class="<%= locals.active === 'dashboard' ? 'active' : '' %>">Dashboard</a>
+    <a href="/admin/eventi" class="<%= locals.active === 'eventi' ? 'active' : '' %>">Eventi</a>
+    <a href="/admin/layouts" class="<%= locals.active === 'layouts' ? 'active' : '' %>">Planimetrie</a>
+    <a href="/admin/dj" class="<%= locals.active === 'dj' ? 'active' : '' %>">DJ</a>
+    <a href="/admin/galleria" class="<%= locals.active === 'galleria' ? 'active' : '' %>">Galleria</a>
+    <a href="/admin/news" class="<%= locals.active === 'news' ? 'active' : '' %>">News</a>
+    <a href="/admin/prenotazioni" class="<%= locals.active === 'prenotazioni' ? 'active' : '' %>">Prenotazioni</a>
+    <a href="/admin/newsletter" class="<%= locals.active === 'newsletter' ? 'active' : '' %>">Newsletter</a>
+    <div class="sidebar-spacer"></div>
+    <div class="sidebar-logout">
+      <form method="POST" action="/admin/logout">
+        <button type="submit">Logout</button>
+      </form>
+    </div>
+  </nav>
+  <div class="admin-content">

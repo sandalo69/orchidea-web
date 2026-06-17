@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= typeof title !== 'undefined' ? title + ' — ' : '' %>Orchidea</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="main-nav">
+  <a href="/" class="logo">🌸 ORCHIDEA</a>
+  <div class="nav-links" id="nav-links">
+    <a href="/eventi">Eventi</a>
+    <a href="/dj">DJ</a>
+    <a href="/galleria">Galleria</a>
+    <a href="/contatti">Contatti</a>
+    <% if (locals.user) { %>
+      <a href="/prenota">Prenota</a>
+      <a href="/auth/logout" style="color:var(--text-muted);">Esci (<%= user.nome %>)</a>
+    <% } else { %>
+      <a href="/auth/login" class="btn-nav">Accedi</a>
+    <% } %>
+  </div>
+</nav>
+<main>
