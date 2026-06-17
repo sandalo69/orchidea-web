@@ -1,0 +1,29 @@
+<%- include('../_header', { title, active }) %>
+<div class="page-header">
+  <h1>Planimetrie</h1>
+  <a href="/admin/layouts/nuovo" class="btn btn-primary">+ Nuova planimetria</a>
+</div>
+<% if (layouts.length === 0) { %>
+  <div class="card" style="text-align:center;padding:3rem;color:var(--text-muted);">Nessuna planimetria.</div>
+<% } else { %>
+  <div class="card" style="padding:0;">
+    <table>
+      <thead><tr><th>Nome</th><th>Creata</th><th>Azioni</th></tr></thead>
+      <tbody>
+        <% layouts.forEach(l => { %>
+          <tr>
+            <td><strong><%= l.nome %></strong></td>
+            <td><%= new Date(l.created_at).toLocaleDateString('it-IT') %></td>
+            <td style="display:flex;gap:0.5rem;">
+              <a href="/admin/layouts/<%= l.id %>/modifica" class="btn btn-sm btn-secondary">Modifica</a>
+              <form method="POST" action="/admin/layouts/<%= l.id %>/elimina" onsubmit="return confirm('Eliminare?')">
+                <button class="btn btn-sm btn-danger">Elimina</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('../_footer') %>

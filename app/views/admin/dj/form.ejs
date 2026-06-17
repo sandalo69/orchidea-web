@@ -1,0 +1,28 @@
+<%- include('../_header', { title, active }) %>
+<div class="page-header">
+  <h1><%= dj ? 'Modifica DJ' : 'Nuovo DJ' %></h1>
+  <a href="/admin/dj" class="btn btn-secondary">← Indietro</a>
+</div>
+<div class="card" style="max-width:600px;">
+  <form method="POST" action="<%= dj ? '/admin/dj/' + dj.id : '/admin/dj' %>" enctype="multipart/form-data">
+    <div class="form-group">
+      <label>Nome *</label>
+      <input type="text" name="nome" required value="<%= dj ? dj.nome : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Bio</label>
+      <textarea name="bio"><%= dj ? dj.bio || '' : '' %></textarea>
+    </div>
+    <div class="form-group">
+      <label>Foto (JPG/PNG/WEBP, max 5MB)</label>
+      <input type="file" name="foto" accept=".jpg,.jpeg,.png,.webp" style="color:var(--text-primary);">
+      <% if (dj && dj.foto_path) { %><p style="margin-top:0.5rem;font-size:0.8rem;color:var(--text-muted);">Foto attuale: <%= dj.foto_path %>. Carica nuova per sostituire.</p><% } %>
+    </div>
+    <div class="form-group">
+      <label>Ordine visualizzazione</label>
+      <input type="number" name="ordine" value="<%= dj ? dj.ordine : '0' %>" min="0">
+    </div>
+    <button type="submit" class="btn btn-primary"><%= dj ? 'Salva' : 'Crea' %></button>
+  </form>
+</div>
+<%- include('../_footer') %>

@@ -1,0 +1,29 @@
+<%- include('_header', { title, active }) %>
+<div class="page-header">
+  <h1>Dashboard</h1>
+</div>
+<div class="grid grid-3" style="margin-bottom:2rem;">
+  <div class="card" style="text-align:center;">
+    <div style="font-size:2.5rem;font-weight:900;color:var(--neon-cyan);"><%= stats.utenti %></div>
+    <p style="color:var(--text-muted);margin-top:0.5rem;">Utenti confermati</p>
+  </div>
+  <div class="card" style="text-align:center;">
+    <div style="font-size:2.5rem;font-weight:900;color:var(--neon-purple);"><%= stats.eventi %></div>
+    <p style="color:var(--text-muted);margin-top:0.5rem;">Serate totali</p>
+  </div>
+  <div class="card" style="text-align:center;">
+    <div style="font-size:2.5rem;font-weight:900;color:var(--neon-fuchsia);"><%= stats.prenotazioni %></div>
+    <p style="color:var(--text-muted);margin-top:0.5rem;">Prenotazioni confermate</p>
+  </div>
+</div>
+<div class="grid grid-2">
+  <a href="/admin/eventi/nuovo" class="card" style="display:block;">
+    <h3 style="color:var(--neon-purple);">+ Nuovo evento</h3>
+    <p style="color:var(--text-muted);margin-top:0.4rem;">Crea una nuova serata</p>
+  </a>
+  <a href="/admin/prenotazioni" class="card" style="display:block;">
+    <h3 style="color:var(--neon-cyan);">Prenotazioni</h3>
+    <p style="color:var(--text-muted);margin-top:0.4rem;">Gestisci le prenotazioni</p>
+  </a>
+</div>
+<%- include('_footer') %>

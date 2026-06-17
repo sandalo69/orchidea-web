@@ -1,0 +1,457 @@
+const express = require('express');
+const router = express.Router();
+const bcrypt = require('bcrypt');
+const path = require('path');
+const multer = require('multer');
+const db = require('../db');
+const requireAdmin = require('../middleware/adminAuth');
+const { sendBulkNewsletter } = require('../services/email');
+
+// Multer per upload immagini
+const storage = multer.diskStorage({
+  destination: path.join(__dirname, '../uploads'),
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`);
+  },
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (['.jpg', '.jpeg', '.png', '.webp'].includes(path.extname(file.originalname).toLowerCase())) {
+      cb(null, true);
+    } else {
+      cb(new Error('Solo immagini JPG, PNG, WEBP'));
+    }
+  },
+});
+
+// ── Login ──────────────────────────────────────────────────────────────────
+
+router.get('/login', (req, res) => {
+  if (req.session.adminId) return res.redirect('/admin');
+  res.render('admin/login', { title: 'Admin Login', query: req.query });
+});
+
+router.post('/login', async (req, res, next) => {
+  const { email, password } = req.body;
+  try {
+    const { rows } = await db.query('SELECT * FROM admins WHERE email = $1', [email]);
+    const admin = rows[0];
+    if (!admin || !await bcrypt.compare(password, admin.password_hash)) {
+      return res.redirect('/admin/login?error=credenziali');
+    }
+    req.session.adminId = admin.id;
+    req.session.adminEmail = admin.email;
+    res.redirect('/admin');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) console.error('Errore distruzione sessione admin:', err.message);
+    res.redirect('/admin/login');
+  });
+});
+
+// ── Dashboard ──────────────────────────────────────────────────────────────
+
+router.get('/', requireAdmin, async (req, res, next) => {
+  try {
+    const [utenti, eventi, prenotazioni, dj] = await Promise.all([
+      db.query('SELECT COUNT(*) FROM users WHERE confermato = TRUE'),
+      db.query('SELECT COUNT(*) FROM events'),
+      db.query("SELECT COUNT(*) FROM bookings WHERE stato = 'confermata'"),
+      db.query('SELECT COUNT(*) FROM dj_profiles'),
+    ]);
+    res.render('admin/dashboard', {
+      title: 'Dashboard',
+      active: 'dashboard',
+      stats: {
+        utenti: parseInt(utenti.rows[0].count),
+        eventi: parseInt(eventi.rows[0].count),
+        prenotazioni: parseInt(prenotazioni.rows[0].count),
+        dj: parseInt(dj.rows[0].count),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── CRUD: Eventi ───────────────────────────────────────────────────────────
+
+router.get('/eventi', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT e.*, l.nome AS layout_nome FROM events e
+       LEFT JOIN layouts l ON e.layout_id = l.id
+       ORDER BY e.data_evento DESC`
+    );
+    res.render('admin/eventi/lista', { title: 'Gestione eventi', active: 'eventi', eventi: rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/eventi/nuovo', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows: layouts } = await db.query('SELECT id, nome FROM layouts ORDER BY nome');
+    res.render('admin/eventi/form', { title: 'Nuovo evento', active: 'eventi', evento: null, layouts, query: req.query });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/eventi', requireAdmin, async (req, res, next) => {
+  const { titolo, data_evento, descrizione, layout_id, costo_acconto, max_posti_per_utente } = req.body;
+  const prenotazioni_aperte = req.body.prenotazioni_aperte === 'on';
+  const pubblicato = req.body.pubblicato === 'on';
+  try {
+    await db.query(
+      `INSERT INTO events (titolo, data_evento, descrizione, layout_id, costo_acconto, max_posti_per_utente, prenotazioni_aperte, pubblicato)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [titolo, data_evento, descrizione || null, layout_id || null, costo_acconto || 0, max_posti_per_utente || 10, prenotazioni_aperte, pubblicato]
+    );
+    res.redirect('/admin/eventi');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/eventi/:id/modifica', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows: [evento] } = await db.query('SELECT * FROM events WHERE id = $1', [req.params.id]);
+    if (!evento) return res.redirect('/admin/eventi');
+    const { rows: layouts } = await db.query('SELECT id, nome FROM layouts ORDER BY nome');
+    res.render('admin/eventi/form', { title: 'Modifica evento', active: 'eventi', evento, layouts, query: req.query });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/eventi/:id', requireAdmin, async (req, res, next) => {
+  const { titolo, data_evento, descrizione, layout_id, costo_acconto, max_posti_per_utente } = req.body;
+  const prenotazioni_aperte = req.body.prenotazioni_aperte === 'on';
+  const pubblicato = req.body.pubblicato === 'on';
+  try {
+    await db.query(
+      `UPDATE events SET titolo=$1, data_evento=$2, descrizione=$3, layout_id=$4,
+       costo_acconto=$5, max_posti_per_utente=$6, prenotazioni_aperte=$7, pubblicato=$8
+       WHERE id=$9`,
+      [titolo, data_evento, descrizione || null, layout_id || null, costo_acconto, max_posti_per_utente, prenotazioni_aperte, pubblicato, req.params.id]
+    );
+    res.redirect('/admin/eventi');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/eventi/:id/elimina', requireAdmin, async (req, res, next) => {
+  try {
+    await db.query('DELETE FROM events WHERE id = $1', [req.params.id]);
+    res.redirect('/admin/eventi');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── CRUD: Layouts ──────────────────────────────────────────────────────────
+
+router.get('/layouts', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM layouts ORDER BY created_at DESC');
+    res.render('admin/layouts/lista', { title: 'Planimetrie', active: 'layouts', layouts: rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/layouts/nuovo', requireAdmin, (req, res) => {
+  res.render('admin/layouts/form', { title: 'Nuova planimetria', active: 'layouts', layout: null });
+});
+
+router.post('/layouts', requireAdmin, async (req, res, next) => {
+  try {
+    await db.query('INSERT INTO layouts (nome) VALUES ($1)', [req.body.nome]);
+    res.redirect('/admin/layouts');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/layouts/:id/modifica', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows: [layout] } = await db.query('SELECT * FROM layouts WHERE id = $1', [req.params.id]);
+    if (!layout) return res.redirect('/admin/layouts');
+    res.render('admin/layouts/form', { title: 'Modifica planimetria', active: 'layouts', layout });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/layouts/:id', requireAdmin, async (req, res, next) => {
+  try {
+    await db.query('UPDATE layouts SET nome=$1 WHERE id=$2', [req.body.nome, req.params.id]);
+    res.redirect('/admin/layouts');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/layouts/:id/elimina', requireAdmin, async (req, res, next) => {
+  try {
+    await db.query('DELETE FROM layouts WHERE id = $1', [req.params.id]);
+    res.redirect('/admin/layouts');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── CRUD: DJ ───────────────────────────────────────────────────────────────
+
+router.get('/dj', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM dj_profiles ORDER BY ordine ASC');
+    res.render('admin/dj/lista', { title: 'Gestione DJ', active: 'dj', djs: rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/dj/nuovo', requireAdmin, (req, res) => {
+  res.render('admin/dj/form', { title: 'Nuovo DJ', active: 'dj', dj: null });
+});
+
+router.post('/dj', requireAdmin, upload.single('foto'), async (req, res, next) => {
+  const { nome, bio, ordine } = req.body;
+  const foto_path = req.file ? req.file.filename : null;
+  try {
+    await db.query(
+      'INSERT INTO dj_profiles (nome, bio, foto_path, ordine) VALUES ($1, $2, $3, $4)',
+      [nome, bio || null, foto_path, ordine || 0]
+    );
+    res.redirect('/admin/dj');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/dj/:id/modifica', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows: [dj] } = await db.query('SELECT * FROM dj_profiles WHERE id = $1', [req.params.id]);
+    if (!dj) return res.redirect('/admin/dj');
+    res.render('admin/dj/form', { title: 'Modifica DJ', active: 'dj', dj });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/dj/:id', requireAdmin, upload.single('foto'), async (req, res, next) => {
+  const { nome, bio, ordine } = req.body;
+  try {
+    if (req.file) {
+      await db.query(
+        'UPDATE dj_profiles SET nome=$1, bio=$2, foto_path=$3, ordine=$4 WHERE id=$5',
+        [nome, bio || null, req.file.filename, ordine || 0, req.params.id]
+      );
+    } else {
+      await db.query(
+        'UPDATE dj_profiles SET nome=$1, bio=$2, ordine=$3 WHERE id=$4',
+        [nome, bio || null, ordine || 0, req.params.id]
+      );
+    }
+    res.redirect('/admin/dj');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/dj/:id/elimina', requireAdmin, async (req, res, next) => {
+  try {
+    await db.query('DELETE FROM dj_profiles WHERE id = $1', [req.params.id]);
+    res.redirect('/admin/dj');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── CRUD: Galleria ─────────────────────────────────────────────────────────
+
+router.get('/galleria', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows } = await db.query(
+      `SELECT g.*, e.titolo AS evento_titolo FROM gallery g
+       LEFT JOIN events e ON g.event_id = e.id
+       ORDER BY g.created_at DESC`
+    );
+    res.render('admin/galleria/lista', { title: 'Galleria', active: 'galleria', foto: rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/galleria/nuovo', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows: eventi } = await db.query('SELECT id, titolo FROM events ORDER BY data_evento DESC');
+    res.render('admin/galleria/form', { title: 'Aggiungi foto', active: 'galleria', foto: null, eventi, query: req.query });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/galleria', requireAdmin, upload.single('foto'), async (req, res, next) => {
+  if (!req.file) return res.redirect('/admin/galleria/nuovo?error=no_file');
+  const { didascalia, event_id } = req.body;
+  try {
+    await db.query(
+      'INSERT INTO gallery (foto_path, didascalia, event_id) VALUES ($1, $2, $3)',
+      [req.file.filename, didascalia || null, event_id || null]
+    );
+    res.redirect('/admin/galleria');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/galleria/:id/elimina', requireAdmin, async (req, res, next) => {
+  try {
+    await db.query('DELETE FROM gallery WHERE id = $1', [req.params.id]);
+    res.redirect('/admin/galleria');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── CRUD: News ─────────────────────────────────────────────────────────────
+
+router.get('/news', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows } = await db.query('SELECT * FROM news ORDER BY created_at DESC');
+    res.render('admin/news/lista', { title: 'Gestione news', active: 'news', notizie: rows });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/news/nuovo', requireAdmin, (req, res) => {
+  res.render('admin/news/form', { title: 'Nuova news', active: 'news', notizia: null });
+});
+
+router.post('/news', requireAdmin, async (req, res, next) => {
+  const { titolo, contenuto } = req.body;
+  const pubblicata = req.body.pubblicata === 'on';
+  try {
+    await db.query('INSERT INTO news (titolo, contenuto, pubblicata) VALUES ($1, $2, $3)', [titolo, contenuto, pubblicata]);
+    res.redirect('/admin/news');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.get('/news/:id/modifica', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows: [notizia] } = await db.query('SELECT * FROM news WHERE id = $1', [req.params.id]);
+    if (!notizia) return res.redirect('/admin/news');
+    res.render('admin/news/form', { title: 'Modifica news', active: 'news', notizia });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/news/:id', requireAdmin, async (req, res, next) => {
+  const { titolo, contenuto } = req.body;
+  const pubblicata = req.body.pubblicata === 'on';
+  try {
+    await db.query('UPDATE news SET titolo=$1, contenuto=$2, pubblicata=$3 WHERE id=$4', [titolo, contenuto, pubblicata, req.params.id]);
+    res.redirect('/admin/news');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/news/:id/elimina', requireAdmin, async (req, res, next) => {
+  try {
+    await db.query('DELETE FROM news WHERE id = $1', [req.params.id]);
+    res.redirect('/admin/news');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── Prenotazioni ───────────────────────────────────────────────────────────
+
+router.get('/prenotazioni', requireAdmin, async (req, res, next) => {
+  const eventId = req.query.evento;
+  try {
+    const { rows: eventi } = await db.query('SELECT id, titolo FROM events ORDER BY data_evento DESC');
+    let prenotazioni = [];
+    if (eventId) {
+      const { rows } = await db.query(
+        `SELECT b.*, u.nome, u.cognome, u.email, e.titolo AS evento_titolo
+         FROM bookings b
+         JOIN users u ON b.user_id = u.id
+         JOIN events e ON b.event_id = e.id
+         WHERE b.event_id = $1
+         ORDER BY b.created_at DESC`,
+        [eventId]
+      );
+      prenotazioni = rows;
+    }
+    res.render('admin/prenotazioni/lista', {
+      title: 'Prenotazioni',
+      active: 'prenotazioni',
+      prenotazioni,
+      eventi,
+      eventoSelezionato: eventId || null,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/prenotazioni/:id/approva', requireAdmin, async (req, res, next) => {
+  try {
+    await db.query("UPDATE bookings SET stato = 'confermata' WHERE id = $1", [req.params.id]);
+    res.redirect('back');
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/prenotazioni/:id/rifiuta', requireAdmin, async (req, res, next) => {
+  try {
+    await db.query("UPDATE bookings SET stato = 'annullata' WHERE id = $1", [req.params.id]);
+    res.redirect('back');
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── Newsletter ─────────────────────────────────────────────────────────────
+
+router.get('/newsletter', requireAdmin, (req, res) => {
+  res.render('admin/newsletter/form', { title: 'Newsletter', active: 'newsletter', query: req.query });
+});
+
+router.post('/newsletter', requireAdmin, async (req, res, next) => {
+  const { oggetto, corpo } = req.body;
+  try {
+    const { rows: recipients } = await db.query(
+      'SELECT email FROM users WHERE confermato = TRUE'
+    );
+    const count = await sendBulkNewsletter(oggetto, corpo, recipients);
+    await db.query(
+      'INSERT INTO newsletter_sends (oggetto, corpo, destinatari) VALUES ($1, $2, $3)',
+      [oggetto, corpo, count]
+    );
+    res.redirect('/admin/newsletter?success=inviata&count=' + count);
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;

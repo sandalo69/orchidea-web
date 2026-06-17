@@ -1,0 +1,53 @@
+<%- include('../_header', { title, active }) %>
+<div class="page-header">
+  <h1>Prenotazioni</h1>
+</div>
+<div class="card" style="margin-bottom:1.5rem;">
+  <form method="GET" action="/admin/prenotazioni" style="display:flex;gap:1rem;align-items:flex-end;">
+    <div class="form-group" style="margin:0;flex:1;">
+      <label>Filtra per evento</label>
+      <select name="evento">
+        <option value="">-- Seleziona evento --</option>
+        <% eventi.forEach(ev => { %>
+          <option value="<%= ev.id %>" <%= eventoSelezionato == ev.id ? 'selected' : '' %>><%= ev.titolo %></option>
+        <% }) %>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-secondary">Filtra</button>
+  </form>
+</div>
+<% if (eventoSelezionato && prenotazioni.length === 0) { %>
+  <p style="color:var(--text-muted);">Nessuna prenotazione per questo evento.</p>
+<% } else if (prenotazioni.length > 0) { %>
+  <div class="card" style="padding:0;">
+    <table>
+      <thead><tr><th>Utente</th><th>Email</th><th>Stato</th><th>Importo</th><th>Data</th><th>Azioni</th></tr></thead>
+      <tbody>
+        <% prenotazioni.forEach(b => { %>
+          <tr>
+            <td><strong><%= b.nome %> <%= b.cognome %></strong></td>
+            <td style="color:var(--text-muted);"><%= b.email %></td>
+            <td>
+              <span class="badge <%= b.stato === 'confermata' ? 'badge-green' : b.stato === 'annullata' ? 'badge-red' : b.stato === 'in_attesa' ? 'badge-yellow' : 'badge-gray' %>">
+                <%= b.stato %>
+              </span>
+            </td>
+            <td>€<%= b.importo %></td>
+            <td><%= new Date(b.created_at).toLocaleDateString('it-IT') %></td>
+            <td style="display:flex;gap:0.5rem;">
+              <% if (b.stato === 'in_attesa') { %>
+                <form method="POST" action="/admin/prenotazioni/<%= b.id %>/approva">
+                  <button class="btn btn-sm btn-primary">Approva</button>
+                </form>
+                <form method="POST" action="/admin/prenotazioni/<%= b.id %>/rifiuta" onsubmit="return confirm('Rifiutare?')">
+                  <button class="btn btn-sm btn-danger">Rifiuta</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('../_footer') %>

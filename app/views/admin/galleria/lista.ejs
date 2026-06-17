@@ -1,0 +1,21 @@
+<%- include('../_header', { title, active }) %>
+<div class="page-header">
+  <h1>Galleria</h1>
+  <a href="/admin/galleria/nuovo" class="btn btn-primary">+ Aggiungi foto</a>
+</div>
+<% if (foto.length === 0) { %>
+  <p style="color:var(--text-muted);">Nessuna foto. <a href="/admin/galleria/nuovo" style="color:var(--neon-purple);">Aggiungine una</a></p>
+<% } else { %>
+  <div class="gallery-grid">
+    <% foto.forEach(f => { %>
+      <div>
+        <img src="/uploads/<%= f.foto_path %>" alt="<%= f.didascalia || '' %>" style="width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:6px;border:1px solid var(--border);">
+        <p style="font-size:0.8rem;color:var(--text-muted);margin:0.3rem 0;"><%= f.didascalia || '' %><% if (f.evento_titolo) { %> — <%= f.evento_titolo %><% } %></p>
+        <form method="POST" action="/admin/galleria/<%= f.id %>/elimina" onsubmit="return confirm('Eliminare foto?')">
+          <button class="btn btn-sm btn-danger">Elimina</button>
+        </form>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+<%- include('../_footer') %>

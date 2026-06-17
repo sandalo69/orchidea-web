@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — Orchidea</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="form-card" style="margin-top:5rem;">
+  <h1 class="form-title">🌸 Admin</h1>
+  <% if (query.error === 'credenziali') { %>
+    <div class="alert alert-error">Credenziali non valide.</div>
+  <% } else if (query.error === 'errore_server') { %>
+    <div class="alert alert-error">Errore del server.</div>
+  <% } %>
+  <form method="POST" action="/admin/login">
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" name="email" required autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" name="password" required autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem;">Accedi</button>
+  </form>
+</div>
+</body>
+</html>

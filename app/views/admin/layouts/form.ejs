@@ -1,0 +1,15 @@
+<%- include('../_header', { title, active }) %>
+<div class="page-header">
+  <h1><%= layout ? 'Modifica planimetria' : 'Nuova planimetria' %></h1>
+  <a href="/admin/layouts" class="btn btn-secondary">← Indietro</a>
+</div>
+<div class="card" style="max-width:500px;">
+  <form method="POST" action="<%= layout ? '/admin/layouts/' + layout.id : '/admin/layouts' %>">
+    <div class="form-group">
+      <label>Nome planimetria *</label>
+      <input type="text" name="nome" required value="<%= layout ? layout.nome : '' %>" placeholder="es. Piano Terra — Sala Principale">
+    </div>
+    <button type="submit" class="btn btn-primary"><%= layout ? 'Salva' : 'Crea' %></button>
+  </form>
+</div>
+<%- include('../_footer') %>

@@ -1,0 +1,30 @@
+<%- include('../_header', { title, active }) %>
+<div class="page-header">
+  <h1>Gestione news</h1>
+  <a href="/admin/news/nuovo" class="btn btn-primary">+ Nuova news</a>
+</div>
+<% if (notizie.length === 0) { %>
+  <div class="card" style="text-align:center;padding:3rem;color:var(--text-muted);">Nessuna news.</div>
+<% } else { %>
+  <div class="card" style="padding:0;">
+    <table>
+      <thead><tr><th>Titolo</th><th>Stato</th><th>Data</th><th>Azioni</th></tr></thead>
+      <tbody>
+        <% notizie.forEach(n => { %>
+          <tr>
+            <td><strong><%= n.titolo %></strong></td>
+            <td><span class="badge <%= n.pubblicata ? 'badge-green' : 'badge-gray' %>"><%= n.pubblicata ? 'Pubblicata' : 'Bozza' %></span></td>
+            <td><%= new Date(n.created_at).toLocaleDateString('it-IT') %></td>
+            <td style="display:flex;gap:0.5rem;">
+              <a href="/admin/news/<%= n.id %>/modifica" class="btn btn-sm btn-secondary">Modifica</a>
+              <form method="POST" action="/admin/news/<%= n.id %>/elimina" onsubmit="return confirm('Eliminare?')">
+                <button class="btn btn-sm btn-danger">Elimina</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+<%- include('../_footer') %>

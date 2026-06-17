@@ -1,0 +1,25 @@
+<%- include('../_header', { title, active }) %>
+<div class="page-header">
+  <h1>Gestione DJ</h1>
+  <a href="/admin/dj/nuovo" class="btn btn-primary">+ Nuovo DJ</a>
+</div>
+<% if (djs.length === 0) { %>
+  <p style="color:var(--text-muted);">Nessun DJ. <a href="/admin/dj/nuovo" style="color:var(--neon-purple);">Aggiungine uno</a></p>
+<% } else { %>
+  <div class="grid grid-3">
+    <% djs.forEach(dj => { %>
+      <div class="card">
+        <% if (dj.foto_path) { %><img src="/uploads/<%= dj.foto_path %>" alt="<%= dj.nome %>" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:6px;margin-bottom:1rem;"><% } %>
+        <h3 style="color:var(--neon-fuchsia);"><%= dj.nome %></h3>
+        <p style="color:var(--text-muted);font-size:0.85rem;margin:0.5rem 0;"><%= (dj.bio || '').substring(0,100) %></p>
+        <div style="display:flex;gap:0.5rem;margin-top:1rem;">
+          <a href="/admin/dj/<%= dj.id %>/modifica" class="btn btn-sm btn-secondary">Modifica</a>
+          <form method="POST" action="/admin/dj/<%= dj.id %>/elimina" onsubmit="return confirm('Eliminare DJ?')">
+            <button class="btn btn-sm btn-danger">Elimina</button>
+          </form>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+<% } %>
+<%- include('../_footer') %>

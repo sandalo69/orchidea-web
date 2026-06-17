@@ -1,0 +1,56 @@
+<%- include('../_header', { title, active }) %>
+<div class="page-header">
+  <h1><%= evento ? 'Modifica evento' : 'Nuovo evento' %></h1>
+  <a href="/admin/eventi" class="btn btn-secondary">← Indietro</a>
+</div>
+<% if (query && query.error) { %><div class="alert alert-error">Errore nel salvataggio.</div><% } %>
+<div class="card" style="max-width:700px;">
+  <form method="POST" action="<%= evento ? '/admin/eventi/' + evento.id : '/admin/eventi' %>">
+    <div class="form-group">
+      <label>Titolo *</label>
+      <input type="text" name="titolo" required value="<%= evento ? evento.titolo : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Data e ora *</label>
+      <input type="datetime-local" name="data_evento" required
+        value="<%= evento ? new Date(evento.data_evento).toISOString().slice(0,16) : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Descrizione</label>
+      <textarea name="descrizione"><%= evento ? evento.descrizione || '' : '' %></textarea>
+    </div>
+    <div class="form-group">
+      <label>Planimetria</label>
+      <select name="layout_id">
+        <option value="">-- Nessuna --</option>
+        <% layouts.forEach(l => { %>
+          <option value="<%= l.id %>" <%= (evento && evento.layout_id == l.id) ? 'selected' : '' %>><%= l.nome %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="grid grid-2">
+      <div class="form-group">
+        <label>Costo acconto (€/posto) *</label>
+        <input type="number" name="costo_acconto" step="0.01" min="0" required value="<%= evento ? evento.costo_acconto : '0' %>">
+      </div>
+      <div class="form-group">
+        <label>Max posti per utente</label>
+        <input type="number" name="max_posti_per_utente" min="1" value="<%= evento ? evento.max_posti_per_utente : '10' %>">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-check">
+        <input type="checkbox" name="pubblicato" <%= (evento && evento.pubblicato) ? 'checked' : '' %>>
+        Pubblicato (visibile sul sito)
+      </label>
+    </div>
+    <div class="form-group">
+      <label class="form-check">
+        <input type="checkbox" name="prenotazioni_aperte" <%= (evento && evento.prenotazioni_aperte) ? 'checked' : '' %>>
+        Prenotazioni aperte
+      </label>
+    </div>
+    <button type="submit" class="btn btn-primary"><%= evento ? 'Salva modifiche' : 'Crea evento' %></button>
+  </form>
+</div>
+<%- include('../_footer') %>

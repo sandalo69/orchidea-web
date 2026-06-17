@@ -1,0 +1,25 @@
+<%- include('../_header', { title, active }) %>
+<div class="page-header">
+  <h1><%= notizia ? 'Modifica news' : 'Nuova news' %></h1>
+  <a href="/admin/news" class="btn btn-secondary">← Indietro</a>
+</div>
+<div class="card" style="max-width:700px;">
+  <form method="POST" action="<%= notizia ? '/admin/news/' + notizia.id : '/admin/news' %>">
+    <div class="form-group">
+      <label>Titolo *</label>
+      <input type="text" name="titolo" required value="<%= notizia ? notizia.titolo : '' %>">
+    </div>
+    <div class="form-group">
+      <label>Contenuto *</label>
+      <textarea name="contenuto" required style="min-height:200px;"><%= notizia ? notizia.contenuto : '' %></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-check">
+        <input type="checkbox" name="pubblicata" <%= (notizia && notizia.pubblicata) ? 'checked' : '' %>>
+        Pubblica sul sito
+      </label>
+    </div>
+    <button type="submit" class="btn btn-primary"><%= notizia ? 'Salva' : 'Pubblica' %></button>
+  </form>
+</div>
+<%- include('../_footer') %>

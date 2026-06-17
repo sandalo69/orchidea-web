@@ -1,0 +1,29 @@
+<%- include('../_header', { title, active }) %>
+<div class="page-header">
+  <h1>Aggiungi foto</h1>
+  <a href="/admin/galleria" class="btn btn-secondary">← Indietro</a>
+</div>
+<% if (query && query.error === 'no_file') { %><div class="alert alert-error">Seleziona un file immagine.</div><% } %>
+<div class="card" style="max-width:500px;">
+  <form method="POST" action="/admin/galleria" enctype="multipart/form-data">
+    <div class="form-group">
+      <label>Foto * (JPG/PNG/WEBP, max 5MB)</label>
+      <input type="file" name="foto" accept=".jpg,.jpeg,.png,.webp" required style="color:var(--text-primary);">
+    </div>
+    <div class="form-group">
+      <label>Didascalia</label>
+      <input type="text" name="didascalia" placeholder="Descrizione opzionale">
+    </div>
+    <div class="form-group">
+      <label>Evento correlato</label>
+      <select name="event_id">
+        <option value="">-- Nessuno --</option>
+        <% eventi.forEach(ev => { %>
+          <option value="<%= ev.id %>"><%= ev.titolo %></option>
+        <% }) %>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Carica</button>
+  </form>
+</div>
+<%- include('../_footer') %>
