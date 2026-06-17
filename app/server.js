@@ -112,6 +112,12 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {});
 });
 
+// Avvia timer scadenza prenotazioni temporanee
+if (require.main === module || process.env.NODE_ENV !== 'test') {
+  const { startTimer } = require('./services/timer');
+  startTimer(io);
+}
+
 // ── Avvio ─────────────────────────────────────────────────
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 
