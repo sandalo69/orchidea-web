@@ -13,6 +13,15 @@ pool.on('error', (err) => {
   console.error('Errore pool PostgreSQL:', err.message);
 });
 
+pool.query(`
+  CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+    id         SERIAL PRIMARY KEY,
+    email      VARCHAR(255) UNIQUE NOT NULL,
+    nome       VARCHAR(100),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+  )
+`).catch(err => console.error('[db] migration newsletter_subscribers:', err.message));
+
 async function query(text, params) {
   const result = await pool.query(text, params);
   return result;

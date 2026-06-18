@@ -85,3 +85,23 @@ test('POST /contatti con dati mancanti redirige con error', async () => {
   expect(res.status).toBe(302);
   expect(res.headers.location).toContain('error');
 });
+
+test('POST /newsletter/subscribe con email valida redirige con ok', async () => {
+  await pool.query("DELETE FROM newsletter_subscribers WHERE email='nl-test@orchidea-test.local'");
+  const res = await request(app).post('/newsletter/subscribe').type('form')
+    .send({ email: 'nl-test@orchidea-test.local', nome: 'Test' });
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('newsletter=ok');
+  await pool.query("DELETE FROM newsletter_subscribers WHERE email='nl-test@orchidea-test.local'");
+});
+
+test('POST /newsletter/subscribe con email duplicata non crasha', async () => {
+  await pool.query(
+    "INSERT INTO newsletter_subscribers (email) VALUES ('dup-nl@orchidea-test.local') ON CONFLICT DO NOTHING"
+  );
+  const res = await request(app).post('/newsletter/subscribe').type('form')
+    .send({ email: 'dup-nl@orchidea-test.local', nome: '' });
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('newsletter=ok');
+  await pool.query("DELETE FROM newsletter_subscribers WHERE email='dup-nl@orchidea-test.local'");
+});

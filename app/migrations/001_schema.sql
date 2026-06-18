@@ -111,6 +111,14 @@ CREATE TABLE IF NOT EXISTS newsletter_sends (
     inviata_at   TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+-- Iscritti newsletter pubblici
+CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+    id         SERIAL PRIMARY KEY,
+    email      VARCHAR(255) UNIQUE NOT NULL,
+    nome       VARCHAR(100),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 -- ============================================================
 -- Indici per performance
 -- ============================================================

@@ -88,4 +88,17 @@ async function sendContactMessage(nome, emailMittente, messaggio) {
   });
 }
 
-module.exports = { sendConfirmationEmail, sendBulkNewsletter, sendBookingConfirmation, sendContactMessage };
+async function sendNewsletterWelcome(nome, email) {
+  if (!process.env.SMTP_HOST) {
+    console.log(`[EMAIL] Newsletter welcome: ${email}`);
+    return;
+  }
+  await createTransporter().sendMail({
+    from: `"Orchidea" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: 'Benvenuto nella newsletter Orchidea!',
+    text: `Ciao${nome ? ' ' + nome : ''}!\n\nSei iscritto/a alla newsletter di Orchidea.\nRiceverai aggiornamenti sulle nostre serate.\n\nA presto,\nOrchidea\nVia U. Maddalena 40, Rottanova (VE) 30014`,
+  });
+}
+
+module.exports = { sendConfirmationEmail, sendBulkNewsletter, sendBookingConfirmation, sendContactMessage, sendNewsletterWelcome };

@@ -12,7 +12,7 @@ router.get('/', async (req, res, next) => {
     const news = await db.query(
       `SELECT * FROM news WHERE pubblicata = TRUE ORDER BY created_at DESC LIMIT 3`
     );
-    res.render('public/home', { title: 'Home', eventi: eventi.rows, news: news.rows });
+    res.render('public/home', { title: 'Home', eventi: eventi.rows, news: news.rows, newsletter: req.query.newsletter || null });
   } catch (err) {
     next(err);
   }
@@ -99,6 +99,23 @@ router.get('/news/:id', async (req, res, next) => {
     );
     if (!articolo) return res.status(404).render('public/404', { title: '404' });
     res.render('public/singola-news', { title: articolo.titolo, articolo });
+  } catch (err) { next(err); }
+});
+
+router.post('/newsletter/subscribe', async (req, res, next) => {
+  const email = (req.body.email || '').trim().toLowerCase().substring(0, 255);
+  const nome = (req.body.nome || '').trim().substring(0, 100);
+  if (!email || !email.includes('@')) {
+    return res.redirect('/?newsletter=error');
+  }
+  try {
+    await db.query(
+      'INSERT INTO newsletter_subscribers (email, nome) VALUES ($1, $2) ON CONFLICT (email) DO NOTHING',
+      [email, nome || null]
+    );
+    emailService.sendNewsletterWelcome(nome, email)
+      .catch(err => console.error('[newsletter]', err.message));
+    res.redirect('/?newsletter=ok');
   } catch (err) { next(err); }
 });
 

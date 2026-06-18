@@ -46,4 +46,24 @@
   </div>
 </section>
 <% } %>
+
+<section class="section" style="padding-top:0;">
+  <div class="container" style="max-width:600px;text-align:center;">
+    <div class="section-label">Resta aggiornato</div>
+    <h2 class="section-title">Newsletter</h2>
+    <p style="color:var(--text-muted);margin-bottom:2rem;">Ricevi in anteprima le date delle nostre serate.</p>
+    <% if (locals.newsletter === 'ok') { %>
+      <div class="alert-success" style="margin-bottom:1rem;">Iscritto! A presto.</div>
+    <% } %>
+    <% if (locals.newsletter === 'error') { %>
+      <div class="alert-error" style="margin-bottom:1rem;">Email non valida.</div>
+    <% } %>
+    <form method="POST" action="/newsletter/subscribe"
+          style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
+      <input type="email" name="email" placeholder="La tua email" required
+             style="flex:1;min-width:200px;max-width:300px;">
+      <button type="submit" class="btn btn-primary">Iscriviti</button>
+    </form>
+  </div>
+</section>
 <%- include('_footer') %>
