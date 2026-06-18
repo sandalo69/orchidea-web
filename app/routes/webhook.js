@@ -47,10 +47,11 @@ router.post('/stripe', async (req, res) => {
           { titolo: fullBooking.evento_titolo, data_evento: fullBooking.data_evento }
         ).catch(err => console.error('[webhook] Email conferma fallita:', err.message));
       } catch (err) {
-        // NOT_FOUND = prenotazione già confermata via return-URL → idempotente, OK
         if (err.code !== 'NOT_FOUND') {
           console.error('[webhook] Errore conferma prenotazione:', err.message);
+          return res.status(500).json({ error: 'Errore interno' }); // Stripe riprova
         }
+        // NOT_FOUND → prenotazione già confermata via return-URL → idempotente
       }
     }
   }

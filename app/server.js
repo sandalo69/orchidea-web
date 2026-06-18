@@ -4,6 +4,10 @@ if (!process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET environment variable is required');
 }
 
+if (process.env.NODE_ENV === 'production' && !process.env.STRIPE_WEBHOOK_SECRET) {
+  throw new Error('STRIPE_WEBHOOK_SECRET is required in production');
+}
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
