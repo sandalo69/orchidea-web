@@ -103,3 +103,24 @@ test('POST /prenota/:bookingId/annulla annulla prenotazione', async () => {
   const { rows: [b] } = await pool.query("SELECT stato FROM bookings WHERE id=$1", [bookingId]);
   expect(b.stato).toBe('annullata');
 });
+
+test('GET /prenota/mie con login mostra le prenotazioni', async () => {
+  const agent = request.agent(app);
+  await loginAsUser(agent);
+  const res = await agent.get('/prenota/mie');
+  expect(res.status).toBe(200);
+  expect(res.text.toLowerCase()).toContain('prenotazioni');
+});
+
+test('GET /prenota/conferma con bookingId valido mostra pagina confermata', async () => {
+  const agent = request.agent(app);
+  await loginAsUser(agent);
+  await pool.query('DELETE FROM bookings WHERE user_id=$1 AND event_id=$2', [testUserId, testEventId]);
+  const postRes = await agent.post(`/prenota/${testEventId}`)
+    .type('form').send({ seat_ids: String(testSeatId) });
+  const bookingId = postRes.headers.location.split('/').pop();
+  const res = await agent.get(`/prenota/conferma?bookingId=${bookingId}`);
+  expect(res.status).toBe(200);
+  expect(res.text.toLowerCase()).toContain('confermata');
+  await pool.query('DELETE FROM bookings WHERE id=$1', [bookingId]);
+});
