@@ -158,6 +158,7 @@ router.get('/account', requireUser, async (req, res, next) => {
       'SELECT nome, cognome, email, telefono FROM users WHERE id = $1',
       [req.session.userId]
     );
+    if (!user) return res.redirect('/auth/login');
     res.render('public/account', { title: 'Il mio account', user, query: req.query });
   } catch (err) { next(err); }
 });
@@ -189,6 +190,7 @@ router.post('/account/password', requireUser, async (req, res, next) => {
     const { rows: [user] } = await db.query(
       'SELECT password_hash FROM users WHERE id = $1', [req.session.userId]
     );
+    if (!user || !user.password_hash) return res.redirect('/auth/login');
     const valid = await bcrypt.compare(corrente, user.password_hash);
     if (!valid) return res.redirect('/account?error=password_corrente_errata');
     const nuova_hash = await bcrypt.hash(nuova, 12);

@@ -15,6 +15,12 @@ const ACCOUNT_EMAIL = 'account-test@orchidea-test.local';
 
 beforeAll(async () => {
   await pool.query("DELETE FROM users WHERE email = $1", [ACCOUNT_EMAIL]);
+  const hash = await bcrypt.hash('AccPass123!', 12);
+  await pool.query(
+    `INSERT INTO users (nome, cognome, email, telefono, password_hash, confermato)
+     VALUES ('Test', 'Account', $1, '3001111111', $2, TRUE)`,
+    [ACCOUNT_EMAIL, hash]
+  );
 });
 
 afterAll(async () => {
@@ -176,13 +182,6 @@ test('GET /account senza login → redirect a /auth/login', async () => {
 });
 
 test('GET /account con login → 200 e mostra profilo', async () => {
-  const hash = await bcrypt.hash('AccPass123!', 12);
-  await pool.query(
-    `INSERT INTO users (nome, cognome, email, telefono, password_hash, confermato)
-     VALUES ('Test', 'Account', $1, '3001111111', $2, TRUE)
-     ON CONFLICT (email) DO NOTHING`,
-    [ACCOUNT_EMAIL, hash]
-  );
   const agent = request.agent(app);
   await agent.post('/auth/login').type('form').send({ email: ACCOUNT_EMAIL, password: 'AccPass123!' });
   const res = await agent.get('/account');
