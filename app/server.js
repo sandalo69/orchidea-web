@@ -52,7 +52,11 @@ app.use(session({
   },
 }));
 
-// Parsing body
+// Webhook Stripe — raw body obbligatorio per verifica firma HMAC
+// DEVE stare prima di express.json() altrimenti il body è già parsato
+app.use('/webhook', express.raw({ type: 'application/json' }), require('./routes/webhook'));
+
+// Parsing body per tutte le altre route
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
