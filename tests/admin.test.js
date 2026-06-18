@@ -20,6 +20,20 @@ beforeAll(async () => {
   await pool.query('INSERT INTO admins (email, password_hash) VALUES ($1, $2)', [ADMIN_EMAIL, hash]);
 });
 
+test('POST /admin/newsletter include newsletter_subscribers nei destinatari', async () => {
+  await pool.query(
+    "INSERT INTO newsletter_subscribers (email) VALUES ('nl-union-test@orchidea.local') ON CONFLICT DO NOTHING"
+  );
+  const agent = request.agent(app);
+  await agent.post('/admin/login').type('form')
+    .send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+  const res = await agent.post('/admin/newsletter').type('form')
+    .send({ oggetto: 'Test UNION Piano6', corpo: '<p>Test body</p>' });
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('success=inviata');
+  await pool.query("DELETE FROM newsletter_subscribers WHERE email='nl-union-test@orchidea.local'");
+});
+
 afterAll(async () => {
   await pool.query('DELETE FROM admins WHERE email = $1', [ADMIN_EMAIL]);
   await new Promise(resolve => server.close(resolve));

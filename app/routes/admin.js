@@ -535,7 +535,7 @@ router.post('/newsletter', requireAdmin, async (req, res, next) => {
   const { oggetto, corpo } = req.body;
   try {
     const { rows: recipients } = await db.query(
-      'SELECT email FROM users WHERE confermato = TRUE'
+      'SELECT email FROM users WHERE confermato = TRUE UNION SELECT email FROM newsletter_subscribers'
     );
     const count = await sendBulkNewsletter(oggetto, corpo, recipients);
     await db.query(
