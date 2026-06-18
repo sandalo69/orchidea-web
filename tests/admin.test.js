@@ -14,10 +14,35 @@ const { pool } = require('../app/db');
 const ADMIN_EMAIL = 'test-admin-piano2@orchidea-test.local';
 const ADMIN_PASSWORD = 'TestAdmin2026!';
 
+let p9UserId, p9EventId, p9LayoutId, p9SeatId;
+
 beforeAll(async () => {
   await pool.query('DELETE FROM admins WHERE email = $1', [ADMIN_EMAIL]);
   const hash = await bcrypt.hash(ADMIN_PASSWORD, 12);
   await pool.query('INSERT INTO admins (email, password_hash) VALUES ($1, $2)', [ADMIN_EMAIL, hash]);
+});
+
+beforeAll(async () => {
+  const { rows: [lay] } = await pool.query("INSERT INTO layouts (nome) VALUES ('P9TestLayout') RETURNING id");
+  p9LayoutId = lay.id;
+  const { rows: [seat] } = await pool.query(
+    "INSERT INTO seats (layout_id, tipo, pos_x, pos_y, capienza, etichetta) VALUES ($1,'posto_singolo',100,100,1,'P9S1') RETURNING id",
+    [p9LayoutId]
+  );
+  p9SeatId = seat.id;
+  const { rows: [ev] } = await pool.query(
+    `INSERT INTO events (titolo, data_evento, layout_id, costo_acconto, max_posti_per_utente, prenotazioni_aperte, pubblicato)
+     VALUES ('P9Event', NOW()+interval'30 days', $1, 10.00, 5, true, true) RETURNING id`,
+    [p9LayoutId]
+  );
+  p9EventId = ev.id;
+  const bcrypt = require('bcrypt');
+  const hash = await bcrypt.hash('p9pass', 10);
+  const { rows: [u] } = await pool.query(
+    "INSERT INTO users (nome, cognome, email, telefono, password_hash, confermato) VALUES ('P9','User','p9-test@orchidea-test.local','0000000000',$1,true) RETURNING id",
+    [hash]
+  );
+  p9UserId = u.id;
 });
 
 test('POST /admin/newsletter include newsletter_subscribers nei destinatari', async () => {
@@ -42,8 +67,55 @@ test('GET /admin/utenti con sessione restituisce 200', async () => {
   expect(res.text).toContain('Utenti');
 });
 
+test('GET /admin/prenotazioni con sessione → 200 e contiene Prenotazioni', async () => {
+  const agent = request.agent(app);
+  await agent.post('/admin/login').type('form').send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+  const res = await agent.get('/admin/prenotazioni');
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('Prenotazioni');
+});
+
+test('POST /admin/prenotazioni/:id/approva imposta stato confermata e redirige', async () => {
+  const { rows: [b] } = await pool.query(
+    `INSERT INTO bookings (user_id, event_id, seat_ids, stato, importo, payment_provider, scadenza_timer)
+     VALUES ($1, $2, $3, 'in_attesa', 10.00, 'stripe', NOW()+interval'1 hour') RETURNING id`,
+    [p9UserId, p9EventId, [p9SeatId]]
+  );
+  const agent = request.agent(app);
+  await agent.post('/admin/login').type('form').send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+  const res = await agent.post(`/admin/prenotazioni/${b.id}/approva`);
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('/admin/prenotazioni');
+  const { rows: [updated] } = await pool.query('SELECT stato FROM bookings WHERE id=$1', [b.id]);
+  expect(updated.stato).toBe('confermata');
+  await pool.query('DELETE FROM bookings WHERE id=$1', [b.id]);
+});
+
+test('POST /admin/prenotazioni/:id/rifiuta imposta stato annullata e redirige', async () => {
+  const { rows: [b] } = await pool.query(
+    `INSERT INTO bookings (user_id, event_id, seat_ids, stato, importo, payment_provider, scadenza_timer)
+     VALUES ($1, $2, $3, 'in_attesa', 10.00, 'stripe', NOW()+interval'1 hour') RETURNING id`,
+    [p9UserId, p9EventId, [p9SeatId]]
+  );
+  const agent = request.agent(app);
+  await agent.post('/admin/login').type('form').send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+  const res = await agent.post(`/admin/prenotazioni/${b.id}/rifiuta`);
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('/admin/prenotazioni');
+  const { rows: [updated] } = await pool.query('SELECT stato FROM bookings WHERE id=$1', [b.id]);
+  expect(updated.stato).toBe('annullata');
+  await pool.query('DELETE FROM bookings WHERE id=$1', [b.id]);
+});
+
 afterAll(async () => {
   await pool.query('DELETE FROM admins WHERE email = $1', [ADMIN_EMAIL]);
+  if (p9EventId) {
+    await pool.query('DELETE FROM bookings WHERE event_id=$1', [p9EventId]);
+    await pool.query('DELETE FROM events WHERE id=$1', [p9EventId]);
+    await pool.query('DELETE FROM layouts WHERE id=$1', [p9LayoutId]);
+    await pool.query("DELETE FROM users WHERE email='p9-test@orchidea-test.local'");
+    await pool.query("DELETE FROM seats WHERE id=$1", [p9SeatId]);
+  }
   await new Promise(resolve => server.close(resolve));
   await pool.end();
 });
