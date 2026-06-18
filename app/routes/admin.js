@@ -229,7 +229,7 @@ router.get('/layouts/:id/posti', requireAdmin, async (req, res, next) => {
 });
 
 router.post('/layouts/:id/posti', requireAdmin, async (req, res, next) => {
-  const TIPI = ['poltroncina_3', 'posto_singolo'];
+  const TIPI = ['tavolo_tondo', 'poltroncina_2', 'posto_singolo'];
   const etichetta = (req.body.etichetta || '').trim();
   const tipo = req.body.tipo;
   const x = parseInt(req.body.pos_x, 10);

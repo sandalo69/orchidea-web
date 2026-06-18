@@ -99,26 +99,24 @@ test('GET /admin/newsletter/iscritti con sessione restituisce 200', async () => 
   expect(res.text).toContain('Iscritti');
 });
 
-test('POST /admin/layouts/:id/posti con tipo tavolo_tondo viene rifiutato', async () => {
+test('POST /admin/layouts/:id/posti con tipo poltroncina_3 viene rifiutato (tipo rinominato)', async () => {
   const agent = request.agent(app);
   await agent.post('/admin/login').type('form').send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
-  // Create a temporary layout
   const { rows: [layout] } = await pool.query("INSERT INTO layouts (nome) VALUES ('test-layout-tipo') RETURNING id");
   const res = await agent.post(`/admin/layouts/${layout.id}/posti`).type('form').send({
-    etichetta: 'T1', tipo: 'tavolo_tondo', pos_x: '100', pos_y: '100', capienza: '2'
+    etichetta: 'T1', tipo: 'poltroncina_3', pos_x: '100', pos_y: '100', capienza: '3'
   });
   expect(res.status).toBe(302);
   expect(res.headers.location).toContain('error');
   await pool.query('DELETE FROM layouts WHERE id = $1', [layout.id]);
 });
 
-test('POST /admin/layouts/:id/posti con tipo poltroncina_3 viene accettato', async () => {
+test('POST /admin/layouts/:id/posti con tipo poltroncina_2 viene accettato', async () => {
   const agent = request.agent(app);
   await agent.post('/admin/login').type('form').send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
-  // Create a temporary layout
   const { rows: [layout] } = await pool.query("INSERT INTO layouts (nome) VALUES ('test-layout-tipo2') RETURNING id");
   const res = await agent.post(`/admin/layouts/${layout.id}/posti`).type('form').send({
-    etichetta: 'P1', tipo: 'poltroncina_3', pos_x: '100', pos_y: '100', capienza: '3'
+    etichetta: 'P1', tipo: 'poltroncina_2', pos_x: '100', pos_y: '100', capienza: '2'
   });
   expect(res.status).toBe(302);
   expect(res.headers.location).not.toContain('error');

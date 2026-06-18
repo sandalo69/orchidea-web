@@ -17,7 +17,7 @@
     <h3 style="margin-bottom:1rem;font-size:1rem;color:var(--text-muted);">Anteprima planimetria</h3>
     <svg viewBox="0 0 800 600" style="width:100%;border:1px solid var(--border);border-radius:8px;background:#0d0d14;">
       <% seats.forEach(s => { %>
-        <% const r = s.tipo === 'posto_singolo' ? 14 : 18; %>
+        <% const r = s.tipo === 'posto_singolo' ? 14 : s.tipo === 'poltroncina_2' ? 18 : 22; %>
         <circle cx="<%= s.pos_x %>" cy="<%= s.pos_y %>" r="<%= r %>"
           fill="none" stroke="var(--neon-cyan)" stroke-width="2"/>
         <text x="<%= s.pos_x %>" y="<%= s.pos_y + 4 %>" text-anchor="middle"
@@ -39,7 +39,8 @@
         <div class="form-group">
           <label>Tipo</label>
           <select name="tipo">
-            <option value="poltroncina_3">Poltroncina (3 posti)</option>
+            <option value="tavolo_tondo">Tavolo tondo</option>
+            <option value="poltroncina_2">Poltroncina (2 posti)</option>
             <option value="posto_singolo">Posto singolo</option>
           </select>
         </div>

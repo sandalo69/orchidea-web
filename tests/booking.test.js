@@ -17,7 +17,7 @@ beforeAll(async () => {
   testLayoutId = layout.id;
 
   const { rows: [seat] } = await pool.query(
-    "INSERT INTO seats (layout_id, tipo, pos_x, pos_y, capienza, etichetta) VALUES ($1,'poltroncina_3',200,200,3,'BT1') RETURNING *",
+    "INSERT INTO seats (layout_id, tipo, pos_x, pos_y, capienza, etichetta) VALUES ($1,'poltroncina_2',200,200,2,'BT1') RETURNING *",
     [testLayoutId]
   );
   testSeatId = seat.id;

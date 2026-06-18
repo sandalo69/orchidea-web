@@ -25,7 +25,7 @@ test('GET /api/events/:id/seats senza evento restituisce seats vuoti', async () 
 test('GET /api/events/:id/seats restituisce struttura corretta per evento con layout', async () => {
   const { rows: [layout] } = await pool.query("INSERT INTO layouts (nome) VALUES ('TestLayout') RETURNING *");
   await pool.query(
-    "INSERT INTO seats (layout_id, tipo, pos_x, pos_y, capienza, etichetta) VALUES ($1,'poltroncina_3',100,100,3,'T1')",
+    "INSERT INTO seats (layout_id, tipo, pos_x, pos_y, capienza, etichetta) VALUES ($1,'poltroncina_2',100,100,2,'T1')",
     [layout.id]
   );
   const { rows: [evento] } = await pool.query(
@@ -39,10 +39,10 @@ test('GET /api/events/:id/seats restituisce struttura corretta per evento con la
   expect(res.body.seats).toHaveLength(1);
   expect(res.body.seats[0]).toMatchObject({
     id: expect.any(Number),
-    tipo: 'poltroncina_3',
+    tipo: 'poltroncina_2',
     pos_x: 100,
     pos_y: 100,
-    capienza: 3,
+    capienza: 2,
     etichetta: 'T1',
     stato: 'disponibile',
   });
