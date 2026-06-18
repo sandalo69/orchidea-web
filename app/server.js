@@ -108,6 +108,9 @@ app.use((req, res) => {
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
+  if (req.accepts('html') && !req.path.startsWith('/api') && !req.path.startsWith('/webhook')) {
+    return res.status(500).render('public/500', { title: 'Errore del server' });
+  }
   res.status(500).json({ error: 'Errore interno del server' });
 });
 

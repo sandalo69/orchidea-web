@@ -5,6 +5,15 @@ const crypto = require('crypto');
 const db = require('../db');
 const verifyCaptcha = require('../middleware/captcha');
 const { sendConfirmationEmail, sendPasswordReset } = require('../services/email');
+const rateLimit = require('express-rate-limit');
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 1000 : 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Troppi tentativi. Riprova tra 15 minuti.' },
+});
 
 // Hash placeholder per prevenire timing attack su email inesistente
 const DUMMY_HASH = '$2b$12$invalidhashpaddingtomatchbcryptcost12xx';
@@ -13,7 +22,7 @@ router.get('/registra', (req, res) => {
   res.render('public/registra', { title: 'Registrati', query: req.query });
 });
 
-router.post('/registra', verifyCaptcha, async (req, res, next) => {
+router.post('/registra', authLimiter, verifyCaptcha, async (req, res, next) => {
   const { nome, cognome, email, telefono, password } = req.body;
   if (!nome || !cognome || !email || !telefono || !password) {
     return res.redirect('/auth/registra?error=campi_mancanti');
@@ -62,7 +71,7 @@ router.get('/login', (req, res) => {
   res.render('public/login', { title: 'Accedi', query: req.query });
 });
 
-router.post('/login', async (req, res, next) => {
+router.post('/login', authLimiter, async (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) return res.redirect('/auth/login?error=campi_mancanti');
   try {
@@ -105,7 +114,7 @@ router.get('/password-reset', (req, res) => {
   res.render('public/password-reset', { title: 'Password dimenticata', query: req.query });
 });
 
-router.post('/password-reset', async (req, res, next) => {
+router.post('/password-reset', authLimiter, async (req, res, next) => {
   const email = (req.body.email || '').trim().toLowerCase().substring(0, 255);
   if (!email) return res.redirect('/auth/password-reset?error=campi_mancanti');
   try {
@@ -144,7 +153,7 @@ router.get('/nuova-password', async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
-router.post('/nuova-password', async (req, res, next) => {
+router.post('/nuova-password', authLimiter, async (req, res, next) => {
   const token = (req.body.token || '').trim();
   const password = req.body.password || '';
   if (!token) return res.redirect('/auth/password-reset?error=token_mancante');

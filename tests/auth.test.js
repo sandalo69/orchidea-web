@@ -77,6 +77,17 @@ test('POST /auth/nuova-password con token valido aggiorna password → 302 login
   await pool.query('DELETE FROM users WHERE email = $1', [email]);
 });
 
+test('app/views/public/500.ejs renderizza senza errori', async () => {
+  const ejs = require('ejs');
+  const path = require('path');
+  const html = await ejs.renderFile(
+    path.join(__dirname, '../app/views/public/500.ejs'),
+    { title: 'Errore del server' }
+  );
+  expect(html).toContain('500');
+  expect(html).toContain('Orchidea');
+});
+
 afterAll(async () => {
   await pool.query('DELETE FROM users WHERE email = $1', [TEST_EMAIL]);
   await pool.end();
