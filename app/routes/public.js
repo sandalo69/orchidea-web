@@ -78,8 +78,10 @@ router.get('/news', async (req, res, next) => {
 
 router.get('/news/:id', async (req, res, next) => {
   try {
+    const id = parseInt(req.params.id, 10);
+    if (!id) return res.status(404).render('public/404', { title: '404' });
     const { rows: [articolo] } = await db.query(
-      'SELECT * FROM news WHERE id=$1 AND pubblicata=TRUE', [req.params.id]
+      'SELECT * FROM news WHERE id=$1 AND pubblicata=TRUE', [id]
     );
     if (!articolo) return res.status(404).render('public/404', { title: '404' });
     res.render('public/singola-news', { title: articolo.titolo, articolo });
