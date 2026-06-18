@@ -112,9 +112,9 @@ afterAll(async () => {
   if (p9EventId) {
     await pool.query('DELETE FROM bookings WHERE event_id=$1', [p9EventId]);
     await pool.query('DELETE FROM events WHERE id=$1', [p9EventId]);
+    await pool.query('DELETE FROM seats WHERE id=$1', [p9SeatId]);
     await pool.query('DELETE FROM layouts WHERE id=$1', [p9LayoutId]);
     await pool.query("DELETE FROM users WHERE email='p9-test@orchidea-test.local'");
-    await pool.query("DELETE FROM seats WHERE id=$1", [p9SeatId]);
   }
   await new Promise(resolve => server.close(resolve));
   await pool.end();
