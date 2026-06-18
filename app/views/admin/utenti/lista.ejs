@@ -1,0 +1,39 @@
+<%- include('../_header', { title, active }) %>
+<div class="page-header">
+  <h1>Utenti registrati (<%= utenti.length %>)</h1>
+</div>
+<% if (utenti.length === 0) { %>
+  <p style="color:var(--text-muted);">Nessun utente registrato.</p>
+<% } else { %>
+<div class="card" style="padding:0;">
+  <table>
+    <thead>
+      <tr>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Telefono</th>
+        <th>Confermato</th>
+        <th>Registrato</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% utenti.forEach(u => { %>
+      <tr>
+        <td><strong><%= u.nome %> <%= u.cognome %></strong></td>
+        <td style="color:var(--text-muted);"><%= u.email %></td>
+        <td><%= u.telefono || '—' %></td>
+        <td>
+          <span class="badge <%= u.confermato ? 'badge-green' : 'badge-gray' %>">
+            <%= u.confermato ? 'Sì' : 'No' %>
+          </span>
+        </td>
+        <td style="color:var(--text-muted);">
+          <%= new Date(u.created_at).toLocaleDateString('it-IT') %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<% } %>
+<%- include('../_footer') %>

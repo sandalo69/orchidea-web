@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const path = require('path');
 const multer = require('multer');
+const fs = require('fs');
 const db = require('../db');
 const requireAdmin = require('../middleware/adminAuth');
 const { sendBulkNewsletter } = require('../services/email');
@@ -26,6 +27,7 @@ const upload = multer({
     }
   },
 });
+fs.mkdirSync(path.join(__dirname, '../uploads'), { recursive: true });
 
 // ── Login ──────────────────────────────────────────────────────────────────
 
@@ -546,6 +548,18 @@ router.post('/newsletter', requireAdmin, async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+// ── Utenti ─────────────────────────────────────────────────────────────────
+
+router.get('/utenti', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows: utenti } = await db.query(
+      `SELECT id, nome, cognome, email, telefono, confermato, created_at
+       FROM users ORDER BY created_at DESC`
+    );
+    res.render('admin/utenti/lista', { title: 'Utenti', active: 'utenti', utenti });
+  } catch (err) { next(err); }
 });
 
 module.exports = router;

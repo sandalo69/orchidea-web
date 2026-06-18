@@ -34,6 +34,14 @@ test('POST /admin/newsletter include newsletter_subscribers nei destinatari', as
   await pool.query("DELETE FROM newsletter_subscribers WHERE email='nl-union-test@orchidea.local'");
 });
 
+test('GET /admin/utenti con sessione restituisce 200', async () => {
+  const agent = request.agent(app);
+  await agent.post('/admin/login').type('form').send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+  const res = await agent.get('/admin/utenti');
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('Utenti');
+});
+
 afterAll(async () => {
   await pool.query('DELETE FROM admins WHERE email = $1', [ADMIN_EMAIL]);
   await new Promise(resolve => server.close(resolve));
