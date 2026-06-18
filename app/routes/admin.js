@@ -514,6 +514,19 @@ router.post('/prenotazioni/:id/rifiuta', requireAdmin, async (req, res, next) =>
 
 // ── Newsletter ─────────────────────────────────────────────────────────────
 
+router.get('/newsletter/iscritti', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows: iscritti } = await db.query(
+      'SELECT id, email, nome, created_at FROM newsletter_subscribers ORDER BY created_at DESC'
+    );
+    res.render('admin/newsletter/iscritti', {
+      title: 'Iscritti newsletter',
+      active: 'newsletter',
+      iscritti,
+    });
+  } catch (err) { next(err); }
+});
+
 router.get('/newsletter', requireAdmin, (req, res) => {
   res.render('admin/newsletter/form', { title: 'Newsletter', active: 'newsletter', query: req.query });
 });

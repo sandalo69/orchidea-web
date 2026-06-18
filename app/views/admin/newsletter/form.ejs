@@ -1,6 +1,7 @@
 <%- include('../_header', { title, active }) %>
-<div class="page-header">
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
   <h1>Invia Newsletter</h1>
+  <a href="/admin/newsletter/iscritti" class="btn btn-secondary">Vedi iscritti →</a>
 </div>
 <% if (query.success === 'inviata') { %>
   <div class="alert alert-success">✓ Newsletter inviata a <%= query.count %> iscritti.</div>

@@ -1,0 +1,30 @@
+<%- include('../_header', { title, active }) %>
+<div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+  <h1>Iscritti Newsletter (<%= iscritti.length %>)</h1>
+  <a href="/admin/newsletter" class="btn btn-secondary">← Invia newsletter</a>
+</div>
+<div class="card" style="overflow-x:auto;">
+  <% if (iscritti.length === 0) { %>
+    <p style="color:var(--text-muted);text-align:center;padding:2rem;">Nessun iscritto al momento.</p>
+  <% } else { %>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Email</th>
+          <th>Nome</th>
+          <th>Iscritto il</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% iscritti.forEach(i => { %>
+          <tr>
+            <td><%= i.email %></td>
+            <td><%= i.nome || '—' %></td>
+            <td><%= new Date(i.created_at).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' }) %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</div>
+<%- include('../_footer') %>

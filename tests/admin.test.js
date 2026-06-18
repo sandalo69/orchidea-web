@@ -22,8 +22,8 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await pool.query('DELETE FROM admins WHERE email = $1', [ADMIN_EMAIL]);
-  await pool.end();
   await new Promise(resolve => server.close(resolve));
+  await pool.end();
 });
 
 test('GET /admin/login returns 200', async () => {
@@ -75,4 +75,12 @@ test('GET /admin/news con sessione restituisce 200', async () => {
   await agent.post('/admin/login').type('form').send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
   const res = await agent.get('/admin/news');
   expect(res.status).toBe(200);
+});
+
+test('GET /admin/newsletter/iscritti con sessione restituisce 200', async () => {
+  const agent = request.agent(app);
+  await agent.post('/admin/login').type('form').send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+  const res = await agent.get('/admin/newsletter/iscritti');
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('Iscritti');
 });
