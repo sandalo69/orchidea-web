@@ -28,10 +28,12 @@ async function verifyPayPalWebhook(headers, rawBody) {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
     body: 'grant_type=client_credentials',
+    signal: AbortSignal.timeout(10_000),
   });
   if (!tokenRes.ok) throw new Error(`PayPal OAuth fallito: ${tokenRes.status}`);
   const { access_token } = await tokenRes.json();
 
+  const parsedEvent = JSON.parse(rawBody.toString());
   const verifyRes = await fetch(`${base}/v1/notifications/verify-webhook-signature`, {
     method: 'POST',
     headers: {
@@ -45,12 +47,14 @@ async function verifyPayPalWebhook(headers, rawBody) {
       auth_algo: headers['paypal-auth-algo'],
       transmission_sig: headers['paypal-transmission-sig'],
       webhook_id: process.env.PAYPAL_WEBHOOK_ID,
-      webhook_event: JSON.parse(rawBody.toString()),
+      webhook_event: parsedEvent,
     }),
+    signal: AbortSignal.timeout(10_000),
   });
   if (!verifyRes.ok) throw new Error(`PayPal verify fallito: ${verifyRes.status}`);
   const { verification_status } = await verifyRes.json();
-  return verification_status === 'SUCCESS';
+  if (verification_status === 'SUCCESS') return { valid: true, event: parsedEvent };
+  return { valid: false };
 }
 
 router.post('/stripe', async (req, res) => {
@@ -88,6 +92,7 @@ router.post('/stripe', async (req, res) => {
           console.error('[webhook] Errore conferma prenotazione:', err.message);
           return res.status(500).json({ error: 'Errore interno' });
         }
+        // NOT_FOUND → prenotazione già confermata via return-URL → idempotente
       }
     }
   }
@@ -100,26 +105,22 @@ router.post('/paypal', async (req, res) => {
 
   if (!webhookId) return res.json({ received: true });
 
-  let isValid;
+  let valid, event;
   try {
-    isValid = await verifyPayPalWebhook(req.headers, req.body);
+    ({ valid, event } = await verifyPayPalWebhook(req.headers, req.body));
   } catch (err) {
     console.error('[webhook/paypal] Errore verifica firma:', err.message);
     return res.status(500).json({ error: 'Errore verifica firma' });
   }
-  if (!isValid) {
+  if (!valid) {
     return res.status(400).json({ error: 'Firma PayPal non valida' });
-  }
-
-  let event;
-  try {
-    event = JSON.parse(req.body.toString());
-  } catch (err) {
-    return res.status(400).json({ error: 'Payload non valido' });
   }
 
   if (event.event_type === 'PAYMENT.CAPTURE.COMPLETED') {
     const bookingId = parseInt(event.resource?.custom_id, 10);
+    if (!bookingId) {
+      console.warn('[webhook/paypal] custom_id mancante o non valido:', event.resource?.custom_id);
+    }
     if (bookingId) {
       try {
         const booking = await bookingService.confirm(bookingId, 'paypal', event.resource?.id);
