@@ -67,4 +67,23 @@ router.get('/contatti', (req, res) => {
   res.render('public/contatti', { title: 'Contatti' });
 });
 
+router.get('/news', async (req, res, next) => {
+  try {
+    const { rows } = await db.query(
+      'SELECT * FROM news WHERE pubblicata=TRUE ORDER BY created_at DESC'
+    );
+    res.render('public/news', { title: 'News', articoli: rows });
+  } catch (err) { next(err); }
+});
+
+router.get('/news/:id', async (req, res, next) => {
+  try {
+    const { rows: [articolo] } = await db.query(
+      'SELECT * FROM news WHERE id=$1 AND pubblicata=TRUE', [req.params.id]
+    );
+    if (!articolo) return res.status(404).render('public/404', { title: '404' });
+    res.render('public/singola-news', { title: articolo.titolo, articolo });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;

@@ -50,3 +50,24 @@ test('GET /pagina-inesistente returns 404', async () => {
   const res = await request(app).get('/pagina-inesistente');
   expect(res.status).toBe(404);
 });
+
+test('GET /news ritorna 200', async () => {
+  const res = await request(app).get('/news');
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('News');
+});
+
+test('GET /news/:id con articolo inesistente ritorna 404', async () => {
+  const res = await request(app).get('/news/99999');
+  expect(res.status).toBe(404);
+});
+
+test('GET /news/:id con articolo pubblicato ritorna 200 e mostra contenuto', async () => {
+  const { rows: [n] } = await pool.query(
+    "INSERT INTO news (titolo, contenuto, pubblicata) VALUES ('TestNews Piano4', 'Testo test piano4', true) RETURNING *"
+  );
+  const res = await request(app).get(`/news/${n.id}`);
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('TestNews Piano4');
+  await pool.query('DELETE FROM news WHERE id=$1', [n.id]);
+});

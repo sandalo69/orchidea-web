@@ -1,0 +1,22 @@
+<%- include('_header', { title }) %>
+<div class="container" style="padding-top:3rem;">
+  <div class="section-label">Aggiornamenti</div>
+  <h1 class="section-title">News</h1>
+  <% if (articoli.length === 0) { %>
+    <div class="card" style="text-align:center;padding:3rem;color:var(--text-muted);">
+      Nessuna news pubblicata al momento.
+    </div>
+  <% } else { %>
+    <div class="grid grid-2">
+      <% articoli.forEach(a => { %>
+        <a href="/news/<%= a.id %>" class="card" style="display:block;">
+          <div class="card-label"><%= new Date(a.created_at).toLocaleDateString('it-IT', {day:'numeric',month:'long',year:'numeric'}) %></div>
+          <h2 style="font-size:1.3rem;margin:0.5rem 0;"><%= a.titolo %></h2>
+          <p style="color:var(--text-muted);"><%= a.contenuto.substring(0, 180) %><%= a.contenuto.length > 180 ? '…' : '' %></p>
+          <span style="color:var(--neon-purple);font-size:0.9rem;margin-top:0.8rem;display:inline-block;">Leggi &rarr;</span>
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+</div>
+<%- include('_footer') %>

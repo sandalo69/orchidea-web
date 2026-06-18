@@ -1,0 +1,10 @@
+<%- include('_header', { title }) %>
+<div class="container" style="padding-top:3rem;max-width:800px;">
+  <a href="/news" style="color:var(--text-muted);font-size:0.9rem;">&larr; Tutte le news</a>
+  <div class="card" style="margin-top:1.5rem;">
+    <div class="card-label"><%= new Date(articolo.created_at).toLocaleDateString('it-IT', {day:'numeric',month:'long',year:'numeric'}) %></div>
+    <h1 style="font-size:2rem;font-weight:900;margin:0.8rem 0 1.5rem;"><%= articolo.titolo %></h1>
+    <div style="color:var(--text-muted);line-height:1.8;white-space:pre-wrap;"><%= articolo.contenuto %></div>
+  </div>
+</div>
+<%- include('_footer') %>
