@@ -13,6 +13,17 @@ function getStripe() {
 }
 
 async function verifyPayPalWebhook(headers, rawBody) {
+  if (!process.env.PAYPAL_CLIENT_ID || !process.env.PAYPAL_SECRET) {
+    throw new Error('PAYPAL_CLIENT_ID e PAYPAL_SECRET sono richiesti per la verifica webhook');
+  }
+
+  let parsedEvent;
+  try {
+    parsedEvent = JSON.parse(rawBody.toString());
+  } catch (err) {
+    throw new Error('Payload PayPal non valido');
+  }
+
   const base = process.env.PAYPAL_MODE === 'live'
     ? 'https://api.paypal.com'
     : 'https://api.sandbox.paypal.com';
@@ -32,8 +43,6 @@ async function verifyPayPalWebhook(headers, rawBody) {
   });
   if (!tokenRes.ok) throw new Error(`PayPal OAuth fallito: ${tokenRes.status}`);
   const { access_token } = await tokenRes.json();
-
-  const parsedEvent = JSON.parse(rawBody.toString());
   const verifyRes = await fetch(`${base}/v1/notifications/verify-webhook-signature`, {
     method: 'POST',
     headers: {

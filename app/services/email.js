@@ -89,14 +89,14 @@ async function sendContactMessage(nome, emailMittente, messaggio) {
 }
 
 async function sendNewsletterWelcome(nome, email) {
-  if (!process.env.SMTP_HOST) {
-    console.log(`[EMAIL] Newsletter welcome: ${email}`);
-    return;
-  }
   const html = await ejs.renderFile(
     path.join(__dirname, '../views/emails/newsletter-welcome.ejs'),
     { nome, baseUrl: process.env.BASE_URL || 'https://orchidea.it' }
   );
+  if (!process.env.SMTP_HOST) {
+    console.log(`[EMAIL] Newsletter welcome: ${email}`);
+    return;
+  }
   await createTransporter().sendMail({
     from: `"Orchidea" <${process.env.SMTP_USER}>`,
     to: email,
