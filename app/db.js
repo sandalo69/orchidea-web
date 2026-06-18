@@ -13,21 +13,23 @@ pool.on('error', (err) => {
   console.error('Errore pool PostgreSQL:', err.message);
 });
 
-pool.query(`
-  CREATE TABLE IF NOT EXISTS newsletter_subscribers (
-    id         SERIAL PRIMARY KEY,
-    email      VARCHAR(255) UNIQUE NOT NULL,
-    nome       VARCHAR(100),
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
-  )
-`).catch(err => console.error('[db] migration newsletter_subscribers:', err.message));
-
-pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(255)`)
-  .catch(err => console.error('[db] migration password_reset_token:', err.message));
-pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_scadenza TIMESTAMP`)
-  .catch(err => console.error('[db] migration password_reset_scadenza:', err.message));
-pool.query(`ALTER TABLE newsletter_subscribers ADD COLUMN IF NOT EXISTS unsubscribe_token VARCHAR(255) UNIQUE`)
-  .catch(err => console.error('[db] migration unsubscribe_token:', err.message));
+(async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS newsletter_subscribers (
+        id         SERIAL PRIMARY KEY,
+        email      VARCHAR(255) UNIQUE NOT NULL,
+        nome       VARCHAR(100),
+        created_at TIMESTAMP NOT NULL DEFAULT NOW()
+      )
+    `);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(255)`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_scadenza TIMESTAMP`);
+    await pool.query(`ALTER TABLE newsletter_subscribers ADD COLUMN IF NOT EXISTS unsubscribe_token VARCHAR(255) UNIQUE`);
+  } catch (err) {
+    console.error('[db] migration error:', err.message);
+  }
+})();
 
 async function query(text, params) {
   const result = await pool.query(text, params);

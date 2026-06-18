@@ -110,7 +110,7 @@ async function sendNewsletterWelcome(nome, email, unsubscribeToken) {
 }
 
 async function sendPasswordReset(to, nome, token) {
-  const link = `${process.env.BASE_URL}/auth/nuova-password?token=${token}`;
+  const link = `${process.env.BASE_URL || 'https://orchidea.it'}/auth/nuova-password?token=${token}`;
   const html = await ejs.renderFile(
     path.join(__dirname, '../views/emails/reset-password.ejs'),
     { nome, link }

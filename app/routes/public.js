@@ -112,10 +112,15 @@ router.post('/newsletter/subscribe', async (req, res, next) => {
   try {
     const unsubscribeToken = crypto.randomBytes(32).toString('hex');
     const result = await db.query(
-      'INSERT INTO newsletter_subscribers (email, nome, unsubscribe_token) VALUES ($1, $2, $3) ON CONFLICT (email) DO NOTHING',
+      `INSERT INTO newsletter_subscribers (email, nome, unsubscribe_token)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (email) DO UPDATE
+         SET unsubscribe_token = COALESCE(newsletter_subscribers.unsubscribe_token, EXCLUDED.unsubscribe_token)
+       RETURNING (xmax = 0) AS is_new`,
       [email, nome || null, unsubscribeToken]
     );
-    if (result.rowCount > 0) {
+    const isNew = result.rows[0]?.is_new;
+    if (isNew) {
       emailService.sendNewsletterWelcome(nome, email, unsubscribeToken)
         .catch(err => console.error('[newsletter]', err.message));
     }

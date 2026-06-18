@@ -158,7 +158,12 @@ router.post('/nuova-password', authLimiter, async (req, res, next) => {
   const password = req.body.password || '';
   if (!token) return res.redirect('/auth/password-reset?error=token_mancante');
   if (password.length < 8) {
-    return res.redirect(`/auth/nuova-password?token=${encodeURIComponent(token)}&error=password_corta`);
+    return res.render('public/nuova-password', {
+      title: 'Nuova password',
+      valid: true,
+      token,
+      query: { error: 'password_corta' },
+    });
   }
   try {
     const { rows: [user] } = await db.query(
