@@ -107,6 +107,61 @@ test('POST /admin/prenotazioni/:id/rifiuta imposta stato annullata e redirige', 
   await pool.query('DELETE FROM bookings WHERE id=$1', [b.id]);
 });
 
+test('POST /admin/news crea news e redirige a /admin/news', async () => {
+  const agent = request.agent(app);
+  await agent.post('/admin/login').type('form').send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+  const res = await agent.post('/admin/news').type('form')
+    .send({ titolo: 'Test Piano9 News', contenuto: 'Contenuto test p9', pubblicata: 'on' });
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toBe('/admin/news');
+  // Cleanup
+  await pool.query("DELETE FROM news WHERE titolo='Test Piano9 News'");
+});
+
+test('POST /admin/news/:id/elimina elimina news e redirige', async () => {
+  const { rows: [n] } = await pool.query(
+    "INSERT INTO news (titolo, contenuto, pubblicata) VALUES ('DelTestP9','Del contenuto p9',false) RETURNING id"
+  );
+  const agent = request.agent(app);
+  await agent.post('/admin/login').type('form').send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+  const res = await agent.post(`/admin/news/${n.id}/elimina`);
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toBe('/admin/news');
+  const { rows } = await pool.query('SELECT id FROM news WHERE id=$1', [n.id]);
+  expect(rows.length).toBe(0);
+});
+
+test('POST /admin/eventi crea evento e redirige a /admin/eventi', async () => {
+  const agent = request.agent(app);
+  await agent.post('/admin/login').type('form').send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+  const res = await agent.post('/admin/eventi').type('form').send({
+    titolo: 'Test Piano9 Evento',
+    data_evento: '2026-12-31T22:00',
+    descrizione: 'Serata test',
+    layout_id: '',
+    costo_acconto: '20',
+    max_posti_per_utente: '5',
+  });
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toBe('/admin/eventi');
+  // Cleanup
+  await pool.query("DELETE FROM events WHERE titolo='Test Piano9 Evento'");
+});
+
+test('POST /admin/eventi/:id/elimina elimina evento e redirige', async () => {
+  const { rows: [ev] } = await pool.query(
+    `INSERT INTO events (titolo, data_evento, costo_acconto, max_posti_per_utente, prenotazioni_aperte, pubblicato)
+     VALUES ('DelTestP9Evento','2026-12-31',0,5,false,false) RETURNING id`
+  );
+  const agent = request.agent(app);
+  await agent.post('/admin/login').type('form').send({ email: ADMIN_EMAIL, password: ADMIN_PASSWORD });
+  const res = await agent.post(`/admin/eventi/${ev.id}/elimina`);
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toBe('/admin/eventi');
+  const { rows } = await pool.query('SELECT id FROM events WHERE id=$1', [ev.id]);
+  expect(rows.length).toBe(0);
+});
+
 afterAll(async () => {
   await pool.query('DELETE FROM admins WHERE email = $1', [ADMIN_EMAIL]);
   if (p9EventId) {
