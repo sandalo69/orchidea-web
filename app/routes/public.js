@@ -105,7 +105,7 @@ router.get('/news/:id', async (req, res, next) => {
 router.post('/newsletter/subscribe', async (req, res, next) => {
   const email = (req.body.email || '').trim().toLowerCase().substring(0, 255);
   const nome = (req.body.nome || '').trim().substring(0, 100);
-  if (!email || !email.includes('@')) {
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.redirect('/?newsletter=error');
   }
   try {
