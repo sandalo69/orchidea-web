@@ -34,7 +34,7 @@ router.post('/stripe', async (req, res) => {
 
   if (event.type === 'payment_intent.succeeded') {
     const intent = event.data.object;
-    const bookingId = parseInt(intent.metadata.booking_id, 10);
+    const bookingId = parseInt(intent.metadata?.booking_id, 10);
     if (bookingId) {
       try {
         const booking = await bookingService.confirm(bookingId, 'stripe', intent.id);
