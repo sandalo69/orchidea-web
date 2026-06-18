@@ -13,24 +13,6 @@ function getStripe() {
   return _stripeInstance;
 }
 
-/**
- * Normalizza il body raw ricevuto.
- * Supertest serializza Buffer.from(str) come {"type":"Buffer","data":[...]} quando
- * Content-Type è application/json. In produzione Stripe invia i byte JSON direttamente.
- * Restituisce sempre un Buffer con i byte originali del payload.
- */
-function normalizeRawBody(body) {
-  if (!Buffer.isBuffer(body)) return body;
-  try {
-    const parsed = JSON.parse(body.toString());
-    if (parsed && parsed.type === 'Buffer' && Array.isArray(parsed.data)) {
-      return Buffer.from(parsed.data);
-    }
-  } catch (_) {
-    // non è JSON — usiamo il body così com'è
-  }
-  return body;
-}
 
 router.post('/stripe', async (req, res) => {
   const sig = req.headers['stripe-signature'];
@@ -44,8 +26,7 @@ router.post('/stripe', async (req, res) => {
   let event;
   try {
     // req.body è un Buffer grazie a express.raw() montato in server.js
-    const rawBody = normalizeRawBody(req.body);
-    event = getStripe().webhooks.constructEvent(rawBody, sig, secret);
+    event = getStripe().webhooks.constructEvent(req.body, sig, secret);
   } catch (err) {
     console.error('[webhook] Firma non valida:', err.message);
     return res.status(400).json({ error: `Webhook Error: ${err.message}` });

@@ -25,7 +25,7 @@ test('POST /webhook/stripe senza stripe-signature → 400', async () => {
   const res = await request(app)
     .post('/webhook/stripe')
     .set('Content-Type', 'application/json')
-    .send(Buffer.from(payload));
+    .send(payload);
   expect(res.status).toBe(400);
 });
 
@@ -36,7 +36,7 @@ test('POST /webhook/stripe con firma valida e evento non gestito → 200', async
     .post('/webhook/stripe')
     .set('Content-Type', 'application/json')
     .set('stripe-signature', header)
-    .send(Buffer.from(payload));
+    .send(payload);
   expect(res.status).toBe(200);
   expect(res.body.received).toBe(true);
 });
@@ -51,7 +51,7 @@ test('POST /webhook/stripe payment_intent.succeeded con booking inesistente → 
     .post('/webhook/stripe')
     .set('Content-Type', 'application/json')
     .set('stripe-signature', header)
-    .send(Buffer.from(payload));
+    .send(payload);
   expect(res.status).toBe(200);
   expect(res.body.received).toBe(true);
 });
