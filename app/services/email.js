@@ -73,4 +73,19 @@ async function sendBookingConfirmation(to, nome, booking, evento) {
   });
 }
 
-module.exports = { sendConfirmationEmail, sendBulkNewsletter, sendBookingConfirmation };
+async function sendContactMessage(nome, emailMittente, messaggio) {
+  const adminEmail = process.env.ADMIN_EMAIL || 'orchideadisco@gmail.com';
+  if (!process.env.SMTP_HOST) {
+    console.log(`[EMAIL] Contatto da ${nome} <${emailMittente}>: ${messaggio.substring(0, 80)}`);
+    return;
+  }
+  await createTransporter().sendMail({
+    from: `"Orchidea" <${process.env.SMTP_USER}>`,
+    to: adminEmail,
+    replyTo: `"${nome}" <${emailMittente}>`,
+    subject: `Messaggio dal sito — ${nome}`,
+    text: `Da: ${nome} <${emailMittente}>\n\n${messaggio}`,
+  });
+}
+
+module.exports = { sendConfirmationEmail, sendBulkNewsletter, sendBookingConfirmation, sendContactMessage };

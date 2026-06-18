@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const emailService = require('../services/email');
 
 router.get('/', async (req, res, next) => {
   try {
@@ -64,7 +65,19 @@ router.get('/galleria', async (req, res, next) => {
 });
 
 router.get('/contatti', (req, res) => {
-  res.render('public/contatti', { title: 'Contatti' });
+  res.render('public/contatti', { title: 'Contatti', query: req.query });
+});
+
+router.post('/contatti', async (req, res) => {
+  const nome = (req.body.nome || '').trim().substring(0, 100);
+  const email = (req.body.email || '').trim().substring(0, 255);
+  const messaggio = (req.body.messaggio || '').trim().substring(0, 2000);
+  if (!nome || !email || !messaggio) {
+    return res.redirect('/contatti?error=campi_mancanti');
+  }
+  emailService.sendContactMessage(nome, email, messaggio)
+    .catch(err => console.error('[contatti]', err.message));
+  res.redirect('/contatti?success=1');
 });
 
 router.get('/news', async (req, res, next) => {

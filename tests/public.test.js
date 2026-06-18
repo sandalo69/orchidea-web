@@ -71,3 +71,17 @@ test('GET /news/:id con articolo pubblicato ritorna 200 e mostra contenuto', asy
   expect(res.text).toContain('TestNews Piano4');
   await pool.query('DELETE FROM news WHERE id=$1', [n.id]);
 });
+
+test('POST /contatti con dati validi redirige con success', async () => {
+  const res = await request(app).post('/contatti').type('form')
+    .send({ nome: 'Mario Rossi', email: 'mario@test.it', messaggio: 'Voglio informazioni.' });
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('success');
+});
+
+test('POST /contatti con dati mancanti redirige con error', async () => {
+  const res = await request(app).post('/contatti').type('form')
+    .send({ nome: '', email: 'mario@test.it', messaggio: '' });
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('error');
+});

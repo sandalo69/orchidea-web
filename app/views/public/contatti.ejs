@@ -1,18 +1,46 @@
 <%- include('_header', { title }) %>
-<div class="container" style="padding-top:3rem;max-width:700px;">
+<div class="container" style="padding-top:3rem;max-width:900px;">
   <div class="section-label">Dove siamo</div>
   <h1 class="section-title">Contatti</h1>
-  <div class="card" style="margin-bottom:1.5rem;">
-    <h2 style="color:var(--neon-cyan);margin-bottom:1rem;">Discoteca Orchidea</h2>
-    <p style="line-height:2;color:var(--text-muted);">
-      📍 Via delle Rose 42, Milano<br>
-      📞 +39 02 1234567<br>
-      📧 info@orchidea.it<br>
-      🕙 Venerdì e Sabato: 23:00 – 05:00
-    </p>
-  </div>
-  <div class="card">
-    <p style="color:var(--text-muted);">Per informazioni su eventi privati e gruppi scrivici a <a href="mailto:info@orchidea.it" style="color:var(--neon-purple);">info@orchidea.it</a></p>
+  <div class="grid-2" style="gap:2rem;align-items:start;">
+    <div class="card">
+      <h2 style="color:var(--neon-cyan);margin-bottom:1.2rem;">Discoteca Orchidea</h2>
+      <p style="line-height:2.4;color:var(--text-muted);">
+        📍 Via U. Maddalena 40<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;Rottanova (VE) 30014<br>
+        📞 <a href="tel:+393471231868" style="color:inherit;">+39 347 123 1868</a><br>
+        📧 <a href="mailto:orchideadisco@gmail.com" style="color:var(--neon-purple);">orchideadisco@gmail.com</a><br>
+        🕙 Venerdì e Sabato: 23:00 – 05:00
+      </p>
+      <a href="https://www.facebook.com/profile.php?id=100057504765665"
+         target="_blank" rel="noopener noreferrer"
+         class="btn btn-secondary btn-sm" style="margin-top:1rem;">Facebook →</a>
+    </div>
+    <div class="form-card">
+      <h3 style="margin-bottom:1.5rem;">Scrivici</h3>
+      <% if (query.success) { %>
+        <div class="alert-success" style="margin-bottom:1rem;">Messaggio inviato! Ti risponderemo presto.</div>
+      <% } %>
+      <% if (query.error) { %>
+        <div class="alert-error" style="margin-bottom:1rem;">Compila tutti i campi.</div>
+      <% } %>
+      <form method="POST" action="/contatti">
+        <div class="form-group">
+          <label>Nome</label>
+          <input type="text" name="nome" required maxlength="100">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" name="email" required maxlength="255">
+        </div>
+        <div class="form-group">
+          <label>Messaggio</label>
+          <textarea name="messaggio" rows="5" required maxlength="2000"
+            style="width:100%;resize:vertical;background:var(--card-bg);border:1px solid var(--border);color:var(--text-primary);padding:0.75rem;border-radius:8px;font-family:inherit;"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Invia messaggio</button>
+      </form>
+    </div>
   </div>
 </div>
 <%- include('_footer') %>
