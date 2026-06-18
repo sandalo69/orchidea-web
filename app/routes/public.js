@@ -72,7 +72,8 @@ router.post('/contatti', async (req, res) => {
   const nome = (req.body.nome || '').trim().substring(0, 100);
   const email = (req.body.email || '').trim().substring(0, 255);
   const messaggio = (req.body.messaggio || '').trim().substring(0, 2000);
-  if (!nome || !email || !messaggio) {
+  const emailValida = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  if (!nome || !email || !emailValida || !messaggio) {
     return res.redirect('/contatti?error=campi_mancanti');
   }
   emailService.sendContactMessage(nome, email, messaggio)
