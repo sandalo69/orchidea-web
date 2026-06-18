@@ -107,6 +107,7 @@ test('POST /prenota/:bookingId/annulla annulla prenotazione', async () => {
 test('GET /prenota/mie con login mostra le prenotazioni', async () => {
   const agent = request.agent(app);
   await loginAsUser(agent);
+  await pool.query('DELETE FROM bookings WHERE user_id=$1 AND event_id=$2', [testUserId, testEventId]);
   const res = await agent.get('/prenota/mie');
   expect(res.status).toBe(200);
   expect(res.text.toLowerCase()).toContain('prenotazioni');
