@@ -100,6 +100,8 @@ router.get('/checkout/:bookingId/stripe/return', requireUser, async (req, res, n
     const fullBooking = await bookingService.getById(confirmedBooking.id);
     req.app.get('io').to(`event:${confirmedBooking.event_id}`).emit('seats:update', { eventId: confirmedBooking.event_id });
     sendBookingConfirmation(fullBooking.user_email, fullBooking.user_nome, fullBooking, { titolo: fullBooking.evento_titolo, data_evento: fullBooking.data_evento }).catch(err => console.error('[EMAIL] Conferma fallita:', err.message));
+    sendAdminBookingAlert(fullBooking)
+      .catch(err => console.error('[EMAIL] Admin alert fallita:', err.message));
     res.redirect(`/prenota/conferma?bookingId=${confirmedBooking.id}`);
   } catch (err) { next(err); }
 });
