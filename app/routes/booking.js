@@ -4,7 +4,7 @@ const db = require('../db');
 const requireUser = require('../middleware/auth');
 const bookingService = require('../services/booking');
 const paymentService = require('../services/payment');
-const { sendBookingConfirmation } = require('../services/email');
+const { sendBookingConfirmation, sendAdminBookingAlert } = require('../services/email');
 
 // GET /prenota → redirect to mie
 router.get('/', requireUser, (req, res) => res.redirect('/prenota/mie'));
@@ -135,6 +135,8 @@ router.post('/checkout/:bookingId/paypal/capture', requireUser, async (req, res,
     const fullBooking = await bookingService.getById(booking.id);
     req.app.get('io').to(`event:${booking.event_id}`).emit('seats:update', { eventId: booking.event_id });
     sendBookingConfirmation(fullBooking.user_email, fullBooking.user_nome, fullBooking, { titolo: fullBooking.evento_titolo, data_evento: fullBooking.data_evento }).catch(err => console.error('[EMAIL] Conferma fallita:', err.message));
+    sendAdminBookingAlert(fullBooking)
+      .catch(err => console.error('[EMAIL] Admin alert fallita:', err.message));
     res.json({ success: true, bookingId: booking.id });
   } catch (err) { next(err); }
 });

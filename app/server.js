@@ -16,6 +16,7 @@ const helmet = require('helmet');
 const session = require('express-session');
 const ConnectPgSimple = require('connect-pg-simple');
 const rateLimit = require('express-rate-limit');
+const compression = require('compression');
 const { pool } = require('./db');
 
 const app = express();
@@ -29,6 +30,9 @@ app.set('trust proxy', 1);
 
 // Sicurezza HTTP headers
 app.use(helmet({ contentSecurityPolicy: false }));
+
+// Compressione gzip/deflate
+app.use(compression());
 
 // Rate limiting globale
 app.use(rateLimit({

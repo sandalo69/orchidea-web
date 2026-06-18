@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Stripe = require('stripe');
 const bookingService = require('../services/booking');
-const { sendBookingConfirmation } = require('../services/email');
+const { sendBookingConfirmation, sendAdminBookingAlert } = require('../services/email');
 
 let _stripeInstance;
 function getStripe() {
@@ -96,6 +96,8 @@ router.post('/stripe', async (req, res) => {
           fullBooking,
           { titolo: fullBooking.evento_titolo, data_evento: fullBooking.data_evento }
         ).catch(err => console.error('[webhook] Email conferma fallita:', err.message));
+        sendAdminBookingAlert(fullBooking)
+          .catch(err => console.error('[webhook] Admin alert Stripe fallita:', err.message));
       } catch (err) {
         if (err.code !== 'NOT_FOUND') {
           console.error('[webhook] Errore conferma prenotazione:', err.message);
@@ -141,6 +143,8 @@ router.post('/paypal', async (req, res) => {
           fullBooking,
           { titolo: fullBooking.evento_titolo, data_evento: fullBooking.data_evento }
         ).catch(err => console.error('[webhook/paypal] Email conferma fallita:', err.message));
+        sendAdminBookingAlert(fullBooking)
+          .catch(err => console.error('[webhook] Admin alert PayPal fallita:', err.message));
       } catch (err) {
         if (err.code !== 'NOT_FOUND') {
           console.error('[webhook/paypal] Errore conferma prenotazione:', err.message);

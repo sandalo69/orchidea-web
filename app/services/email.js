@@ -128,4 +128,32 @@ async function sendPasswordReset(to, nome, token) {
   });
 }
 
-module.exports = { sendConfirmationEmail, sendBulkNewsletter, sendBookingConfirmation, sendContactMessage, sendNewsletterWelcome, sendPasswordReset };
+async function sendAdminBookingAlert(booking) {
+  const adminEmail = process.env.ADMIN_EMAIL || 'orchideadisco@gmail.com';
+  if (!process.env.SMTP_HOST) {
+    console.log(`[EMAIL] Admin alert: prenotazione #${booking.id} confermata — ${booking.evento_titolo}`);
+    return;
+  }
+  const dataStr = booking.data_evento
+    ? new Date(booking.data_evento).toLocaleDateString('it-IT', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit',
+      })
+    : '';
+  await createTransporter().sendMail({
+    from: `"Orchidea" <${process.env.SMTP_USER}>`,
+    to: adminEmail,
+    subject: `Nuova prenotazione #${booking.id} — ${booking.evento_titolo}`,
+    text: [
+      `Prenotazione #${booking.id} confermata.`,
+      ``,
+      `Utente: ${booking.user_nome} (${booking.user_email})`,
+      `Evento: ${booking.evento_titolo}${dataStr ? ' — ' + dataStr : ''}`,
+      `Importo: €${booking.importo}`,
+      `Posti: ${Array.isArray(booking.seat_ids) ? booking.seat_ids.join(', ') : booking.seat_ids}`,
+      `Provider: ${booking.payment_provider}`,
+    ].join('\n'),
+  });
+}
+
+module.exports = { sendConfirmationEmail, sendBulkNewsletter, sendBookingConfirmation, sendContactMessage, sendNewsletterWelcome, sendPasswordReset, sendAdminBookingAlert };

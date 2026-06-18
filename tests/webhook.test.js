@@ -15,6 +15,22 @@ const _stripe = new Stripe('sk_test_stub_for_webhook_utils_only');
 const { app, server } = require('../app/server');
 const { pool } = require('../app/db');
 
+test('sendAdminBookingAlert invia log senza SMTP_HOST', async () => {
+  const { sendAdminBookingAlert } = require('../app/services/email');
+  const booking = {
+    id: 999,
+    evento_titolo: 'Test Serata',
+    user_nome: 'Mario',
+    user_email: 'mario@test.it',
+    importo: '25.00',
+    seat_ids: [1, 2],
+    data_evento: new Date('2026-07-01'),
+    payment_provider: 'stripe',
+  };
+  delete process.env.SMTP_HOST;
+  await expect(sendAdminBookingAlert(booking)).resolves.not.toThrow();
+});
+
 afterAll(async () => {
   await new Promise(resolve => server.close(resolve));
   await pool.end();

@@ -23,6 +23,12 @@ beforeAll(async () => {
   );
 });
 
+test('GET / risponde 200 con compression attiva', async () => {
+  const res = await request(app).get('/').set('Accept-Encoding', 'gzip');
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('Orchidea');
+});
+
 afterAll(async () => {
   await new Promise(resolve => server.close(resolve));
   await pool.end();
