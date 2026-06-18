@@ -93,11 +93,16 @@ async function sendNewsletterWelcome(nome, email) {
     console.log(`[EMAIL] Newsletter welcome: ${email}`);
     return;
   }
+  const html = await ejs.renderFile(
+    path.join(__dirname, '../views/emails/newsletter-welcome.ejs'),
+    { nome, baseUrl: process.env.BASE_URL || 'https://orchidea.it' }
+  );
   await createTransporter().sendMail({
     from: `"Orchidea" <${process.env.SMTP_USER}>`,
     to: email,
-    subject: 'Benvenuto nella newsletter Orchidea!',
-    text: `Ciao${nome ? ' ' + nome : ''}!\n\nSei iscritto/a alla newsletter di Orchidea.\nRiceverai aggiornamenti sulle nostre serate.\n\nA presto,\nOrchidea\nVia U. Maddalena 40, Rottanova (VE) 30014`,
+    subject: 'Benvenuto nella newsletter Orchidea! 🌸',
+    html,
+    text: `Ciao${nome ? ' ' + nome : ''}!\n\nSei iscritto/a alla newsletter di Orchidea.\nRiceverai in anteprima le date delle nostre serate.\n\nOrchidea\nVia U. Maddalena 40, Rottanova (VE) 30014`,
   });
 }
 

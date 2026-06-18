@@ -105,3 +105,24 @@ test('POST /newsletter/subscribe con email duplicata non crasha', async () => {
   expect(res.headers.location).toContain('newsletter=ok');
   await pool.query("DELETE FROM newsletter_subscribers WHERE email='dup-nl@orchidea-test.local'");
 });
+
+test('newsletter-welcome.ejs renderizza senza errori con nome e senza nome', async () => {
+  const ejs = require('ejs');
+  const path = require('path');
+  const templatePath = path.join(__dirname, '../app/views/emails/newsletter-welcome.ejs');
+
+  const htmlConNome = await ejs.renderFile(templatePath, {
+    nome: 'Giulia',
+    baseUrl: 'http://localhost',
+  });
+  expect(htmlConNome).toContain('Giulia');
+  expect(htmlConNome).toContain('newsletter');
+  expect(htmlConNome).toContain('Orchidea');
+
+  const htmlSenzaNome = await ejs.renderFile(templatePath, {
+    nome: '',
+    baseUrl: 'http://localhost',
+  });
+  expect(htmlSenzaNome).toContain('newsletter');
+  expect(htmlSenzaNome).not.toContain('undefined');
+});

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Benvenuto nella newsletter Orchidea</title>
+</head>
+<body style="margin:0;padding:0;background:#0a0a0f;color:#e0e0e0;font-family:Arial,Helvetica,sans-serif;">
+  <div style="max-width:560px;margin:2rem auto;background:#13131f;border:1px solid rgba(157,0,255,0.3);border-radius:8px;overflow:hidden;">
+    <div style="padding:2rem;">
+      <h1 style="margin:0 0 1.5rem;font-size:1.8rem;font-weight:900;background:linear-gradient(135deg,#9d00ff,#ff00e4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
+        🌸 Orchidea
+      </h1>
+      <p style="margin:0 0 0.5rem;color:#e0e0e0;font-size:1rem;">
+        Ciao<% if (nome) { %> <strong><%= nome %></strong><% } %>!
+      </p>
+      <p style="margin:0.8rem 0 1.5rem;color:#b0b0b0;line-height:1.7;font-size:0.95rem;">
+        Sei ufficialmente iscritto/a alla <strong style="color:#e0e0e0;">newsletter di Orchidea</strong>.<br>
+        Riceverai in anteprima le date delle nostre serate, eventi speciali e offerte riservate.
+      </p>
+      <a href="<%= baseUrl %>"
+         style="display:inline-block;padding:0.8rem 2rem;background:#9d00ff;color:#ffffff;text-decoration:none;border-radius:4px;font-weight:700;font-size:0.95rem;">
+        Visita il sito →
+      </a>
+      <hr style="margin:2rem 0;border:none;border-top:1px solid rgba(255,255,255,0.1);">
+      <p style="margin:0;color:#555;font-size:0.8rem;line-height:1.6;">
+        Orchidea · Via U. Maddalena 40, Rottanova (VE) 30014<br>
+        Venerdì e Sabato: 23:00 – 05:00 ·
+        <a href="mailto:orchideadisco@gmail.com" style="color:#555;">orchideadisco@gmail.com</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>
