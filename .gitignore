@@ -7,4 +7,5 @@ app/uploads/*
 docker-compose.override.yml
 .vscode/
 .idea/
-nginx/certs/
+nginx/certs/*
+!nginx/certs/.gitkeep
