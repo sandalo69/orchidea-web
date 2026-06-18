@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= locals.title ? locals.title + ' — ' : '' %>Orchidea</title>
+  <meta name="description" content="<%= locals.metaDescription || 'Orchidea Disco — Rottanova (VE). Prenota i tuoi posti per le nostre serate, venerdì e sabato dalle 23:00.' %>">
+  <meta property="og:title" content="<%= locals.title ? locals.title + ' — ' : '' %>Orchidea">
+  <meta property="og:description" content="<%= locals.metaDescription || 'Orchidea Disco — Rottanova (VE). Prenota i tuoi posti per le nostre serate, venerdì e sabato dalle 23:00.' %>">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="<%= (process.env.BASE_URL || 'https://orchidea.it') + (locals.ogPath || '/') %>">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>

@@ -29,6 +29,26 @@ test('GET / risponde 200 con compression attiva', async () => {
   expect(res.text).toContain('Orchidea');
 });
 
+test('GET /sitemap.xml ritorna 200 con Content-Type xml', async () => {
+  const res = await request(app).get('/sitemap.xml');
+  expect(res.status).toBe(200);
+  expect(res.headers['content-type']).toMatch(/xml/);
+  expect(res.text).toContain('<urlset');
+  expect(res.text).toContain(process.env.BASE_URL || 'http://localhost');
+});
+
+test('GET /robots.txt ritorna 200 e blocca /admin', async () => {
+  const res = await request(app).get('/robots.txt');
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('Disallow: /admin');
+});
+
+test('GET / include meta description nel HTML', async () => {
+  const res = await request(app).get('/');
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('<meta name="description"');
+});
+
 afterAll(async () => {
   await new Promise(resolve => server.close(resolve));
   await pool.end();

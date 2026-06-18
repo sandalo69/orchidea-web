@@ -199,4 +199,33 @@ router.post('/account/password', requireUser, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+router.get('/sitemap.xml', async (req, res, next) => {
+  try {
+    const base = process.env.BASE_URL || 'https://orchidea.it';
+    const { rows: eventi } = await db.query(
+      'SELECT id FROM events WHERE pubblicato=TRUE ORDER BY data_evento DESC'
+    );
+    const staticPages = ['/', '/eventi', '/dj', '/galleria', '/news', '/contatti'];
+    const lines = [
+      '<?xml version="1.0" encoding="UTF-8"?>',
+      '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+      ...staticPages.map(p => `  <url><loc>${base}${p}</loc></url>`),
+      ...eventi.map(e => `  <url><loc>${base}/eventi/${e.id}</loc></url>`),
+      '</urlset>',
+    ];
+    res.type('application/xml').send(lines.join('\n'));
+  } catch (err) { next(err); }
+});
+
+router.get('/robots.txt', (req, res) => {
+  res.type('text/plain').send([
+    'User-agent: *',
+    'Disallow: /admin',
+    'Disallow: /admin/',
+    'Disallow: /auth/registra',
+    'Disallow: /auth/login',
+    `Sitemap: ${process.env.BASE_URL || 'https://orchidea.it'}/sitemap.xml`,
+  ].join('\n'));
+});
+
 module.exports = router;
