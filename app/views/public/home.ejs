@@ -60,6 +60,8 @@
     <% } %>
     <form method="POST" action="/newsletter/subscribe"
           style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
+      <input type="text" name="nome" placeholder="Il tuo nome (opzionale)"
+             style="flex:1;min-width:150px;max-width:200px;">
       <input type="email" name="email" placeholder="La tua email" required
              style="flex:1;min-width:200px;max-width:300px;">
       <button type="submit" class="btn btn-primary">Iscriviti</button>

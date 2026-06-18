@@ -82,8 +82,8 @@ async function sendContactMessage(nome, emailMittente, messaggio) {
   await createTransporter().sendMail({
     from: `"Orchidea" <${process.env.SMTP_USER}>`,
     to: adminEmail,
-    replyTo: `"${nome.replace(/"/g, '')}" <${emailMittente}>`,
-    subject: `Messaggio dal sito — ${nome.replace(/"/g, '')}`,
+    replyTo: `"${nome.replace(/[\r\n"]/g, '')}" <${emailMittente}>`,
+    subject: `Messaggio dal sito — ${nome.replace(/[\r\n"]/g, '')}`,
     text: `Da: ${nome} <${emailMittente}>\n\n${messaggio}`,
   });
 }

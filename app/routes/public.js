@@ -109,12 +109,14 @@ router.post('/newsletter/subscribe', async (req, res, next) => {
     return res.redirect('/?newsletter=error');
   }
   try {
-    await db.query(
+    const result = await db.query(
       'INSERT INTO newsletter_subscribers (email, nome) VALUES ($1, $2) ON CONFLICT (email) DO NOTHING',
       [email, nome || null]
     );
-    emailService.sendNewsletterWelcome(nome, email)
-      .catch(err => console.error('[newsletter]', err.message));
+    if (result.rowCount > 0) {
+      emailService.sendNewsletterWelcome(nome, email)
+        .catch(err => console.error('[newsletter]', err.message));
+    }
     res.redirect('/?newsletter=ok');
   } catch (err) { next(err); }
 });

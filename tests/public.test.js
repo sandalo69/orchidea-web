@@ -11,8 +11,8 @@ const { app, server } = require('../app/server');
 const { pool } = require('../app/db');
 
 afterAll(async () => {
-  await pool.end();
   await new Promise(resolve => server.close(resolve));
+  await pool.end();
 });
 
 test('GET / returns 200', async () => {
