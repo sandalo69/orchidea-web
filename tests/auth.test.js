@@ -14,7 +14,11 @@ const bcrypt = require('bcrypt');
 const TEST_EMAIL = 'test-auth-piano2@orchidea-test.local';
 
 beforeAll(async () => {
-  await pool.query('DELETE FROM users WHERE email = $1', [TEST_EMAIL]);
+  await pool.query('DELETE FROM users WHERE email = ANY($1::text[])', [[
+    TEST_EMAIL,
+    'pw-reset-test@orchidea-test.local',
+    'pw-newpass-test@orchidea-test.local',
+  ]]);
 });
 
 test('GET /auth/password-reset ritorna 200', async () => {

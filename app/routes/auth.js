@@ -160,10 +160,15 @@ router.post('/nuova-password', async (req, res, next) => {
       return res.render('public/nuova-password', { title: 'Nuova password', valid: false, token: '', query: {} });
     }
     const password_hash = await bcrypt.hash(password, 12);
-    await db.query(
-      'UPDATE users SET password_hash = $1, password_reset_token = NULL, password_reset_scadenza = NULL WHERE id = $2',
-      [password_hash, user.id]
+    const { rows: [updated] } = await db.query(
+      `UPDATE users SET password_hash = $1, password_reset_token = NULL, password_reset_scadenza = NULL
+       WHERE id = $2 AND password_reset_token = $3
+       RETURNING id`,
+      [password_hash, user.id, token]
     );
+    if (!updated) {
+      return res.render('public/nuova-password', { title: 'Nuova password', valid: false, token: '', query: {} });
+    }
     res.redirect('/auth/login?success=password_aggiornata');
   } catch (err) { next(err); }
 });
