@@ -9,6 +9,13 @@ process.env.BASE_URL = 'http://localhost';
 const request = require('supertest');
 const { app, server } = require('../app/server');
 const { pool } = require('../app/db');
+const bcrypt = require('bcrypt');
+
+const ACCOUNT_EMAIL = 'account-test@orchidea-test.local';
+
+beforeAll(async () => {
+  await pool.query("DELETE FROM users WHERE email = $1", [ACCOUNT_EMAIL]);
+});
 
 afterAll(async () => {
   await new Promise(resolve => server.close(resolve));
@@ -160,4 +167,56 @@ test('GET /newsletter/unsubscribe con token inesistente → 200 con messaggio no
   const res = await request(app).get('/newsletter/unsubscribe?token=nonexistent-token-xyz-999');
   expect(res.status).toBe(200);
   expect(res.text).toMatch(/non trovato|già disiscritto|non valido/i);
+});
+
+test('GET /account senza login → redirect a /auth/login', async () => {
+  const res = await request(app).get('/account');
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('/auth/login');
+});
+
+test('GET /account con login → 200 e mostra profilo', async () => {
+  const hash = await bcrypt.hash('AccPass123!', 12);
+  await pool.query(
+    `INSERT INTO users (nome, cognome, email, telefono, password_hash, confermato)
+     VALUES ('Test', 'Account', $1, '3001111111', $2, TRUE)
+     ON CONFLICT (email) DO NOTHING`,
+    [ACCOUNT_EMAIL, hash]
+  );
+  const agent = request.agent(app);
+  await agent.post('/auth/login').type('form').send({ email: ACCOUNT_EMAIL, password: 'AccPass123!' });
+  const res = await agent.get('/account');
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('Test');
+});
+
+test('POST /account/profilo aggiorna nome e telefono', async () => {
+  const agent = request.agent(app);
+  await agent.post('/auth/login').type('form').send({ email: ACCOUNT_EMAIL, password: 'AccPass123!' });
+  const res = await agent.post('/account/profilo').type('form')
+    .send({ nome: 'TestMod', cognome: 'AccountMod', telefono: '3009999999' });
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('success=profilo_aggiornato');
+  const { rows: [user] } = await pool.query('SELECT nome, telefono FROM users WHERE email = $1', [ACCOUNT_EMAIL]);
+  expect(user.nome).toBe('TestMod');
+  expect(user.telefono).toBe('3009999999');
+});
+
+test('POST /account/password con password corrente sbagliata → errore', async () => {
+  const agent = request.agent(app);
+  await agent.post('/auth/login').type('form').send({ email: ACCOUNT_EMAIL, password: 'AccPass123!' });
+  const res = await agent.post('/account/password').type('form')
+    .send({ password_corrente: 'sbagliata', nuova_password: 'NuovaPass456!' });
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('error=password_corrente_errata');
+});
+
+test('POST /account/password con password corrente giusta → aggiornata', async () => {
+  const agent = request.agent(app);
+  await agent.post('/auth/login').type('form').send({ email: ACCOUNT_EMAIL, password: 'AccPass123!' });
+  const res = await agent.post('/account/password').type('form')
+    .send({ password_corrente: 'AccPass123!', nuova_password: 'NuovaPass456!' });
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('success=password_aggiornata');
+  await pool.query('DELETE FROM users WHERE email = $1', [ACCOUNT_EMAIL]);
 });

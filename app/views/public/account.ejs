@@ -1,0 +1,61 @@
+<%- include('_header', { title }) %>
+<div class="container" style="padding-top:2rem;max-width:700px;">
+  <h1 class="section-title">Il mio account</h1>
+
+  <% if (query.success === 'profilo_aggiornato') { %>
+    <div class="alert alert-success">✓ Profilo aggiornato.</div>
+  <% } else if (query.success === 'password_aggiornata') { %>
+    <div class="alert alert-success">✓ Password aggiornata.</div>
+  <% } else if (query.error === 'password_corrente_errata') { %>
+    <div class="alert alert-error">Password corrente non corretta.</div>
+  <% } else if (query.error === 'password_corta') { %>
+    <div class="alert alert-error">La nuova password deve avere almeno 8 caratteri.</div>
+  <% } else if (query.error === 'campi_mancanti') { %>
+    <div class="alert alert-error">Compila tutti i campi.</div>
+  <% } %>
+
+  <div class="card" style="margin-bottom:1.5rem;">
+    <h2 style="font-size:1.2rem;margin:0 0 1.2rem;color:var(--neon-cyan);">Dati personali</h2>
+    <form method="POST" action="/account/profilo">
+      <div class="grid grid-2" style="gap:1rem;">
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Nome</label>
+          <input type="text" name="nome" value="<%= user.nome %>" required maxlength="100">
+        </div>
+        <div class="form-group" style="margin-bottom:0;">
+          <label>Cognome</label>
+          <input type="text" name="cognome" value="<%= user.cognome %>" required maxlength="100">
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:1rem;">
+        <label>Telefono</label>
+        <input type="tel" name="telefono" value="<%= user.telefono %>" required maxlength="20">
+      </div>
+      <div class="form-group">
+        <label>Email <span style="color:var(--text-muted);font-size:0.85rem;">(non modificabile)</span></label>
+        <input type="email" value="<%= user.email %>" disabled style="opacity:0.5;">
+      </div>
+      <button type="submit" class="btn btn-primary">Salva dati</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2 style="font-size:1.2rem;margin:0 0 1.2rem;color:var(--neon-purple);">Cambia password</h2>
+    <form method="POST" action="/account/password">
+      <div class="form-group">
+        <label>Password corrente</label>
+        <input type="password" name="password_corrente" required autocomplete="current-password">
+      </div>
+      <div class="form-group">
+        <label>Nuova password (min 8 caratteri)</label>
+        <input type="password" name="nuova_password" required minlength="8" autocomplete="new-password">
+      </div>
+      <button type="submit" class="btn btn-secondary">Cambia password</button>
+    </form>
+  </div>
+
+  <div style="margin-top:1.5rem;text-align:center;">
+    <a href="/prenota/mie" style="color:var(--text-muted);font-size:0.9rem;">← Le mie prenotazioni</a>
+  </div>
+</div>
+<%- include('_footer') %>

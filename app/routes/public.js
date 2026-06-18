@@ -3,6 +3,8 @@ const router = express.Router();
 const db = require('../db');
 const emailService = require('../services/email');
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+const requireUser = require('../middleware/auth');
 
 router.get('/', async (req, res, next) => {
   try {
@@ -147,6 +149,51 @@ router.get('/newsletter/unsubscribe', async (req, res, next) => {
       success: result.rowCount > 0,
       notFound: result.rowCount === 0,
     });
+  } catch (err) { next(err); }
+});
+
+router.get('/account', requireUser, async (req, res, next) => {
+  try {
+    const { rows: [user] } = await db.query(
+      'SELECT nome, cognome, email, telefono FROM users WHERE id = $1',
+      [req.session.userId]
+    );
+    res.render('public/account', { title: 'Il mio account', user, query: req.query });
+  } catch (err) { next(err); }
+});
+
+router.post('/account/profilo', requireUser, async (req, res, next) => {
+  const nome = (req.body.nome || '').trim().substring(0, 100);
+  const cognome = (req.body.cognome || '').trim().substring(0, 100);
+  const telefono = (req.body.telefono || '').trim().substring(0, 20);
+  if (!nome || !cognome || !telefono) {
+    return res.redirect('/account?error=campi_mancanti');
+  }
+  try {
+    await db.query(
+      'UPDATE users SET nome=$1, cognome=$2, telefono=$3 WHERE id=$4',
+      [nome, cognome, telefono, req.session.userId]
+    );
+    req.session.userName = nome;
+    res.redirect('/account?success=profilo_aggiornato');
+  } catch (err) { next(err); }
+});
+
+router.post('/account/password', requireUser, async (req, res, next) => {
+  const corrente = req.body.password_corrente || '';
+  const nuova = req.body.nuova_password || '';
+  if (!corrente || nuova.length < 8) {
+    return res.redirect('/account?error=' + (!corrente ? 'campi_mancanti' : 'password_corta'));
+  }
+  try {
+    const { rows: [user] } = await db.query(
+      'SELECT password_hash FROM users WHERE id = $1', [req.session.userId]
+    );
+    const valid = await bcrypt.compare(corrente, user.password_hash);
+    if (!valid) return res.redirect('/account?error=password_corrente_errata');
+    const nuova_hash = await bcrypt.hash(nuova, 12);
+    await db.query('UPDATE users SET password_hash=$1 WHERE id=$2', [nuova_hash, req.session.userId]);
+    res.redirect('/account?success=password_aggiornata');
   } catch (err) { next(err); }
 });
 
