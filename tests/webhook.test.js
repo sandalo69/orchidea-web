@@ -55,3 +55,28 @@ test('POST /webhook/stripe payment_intent.succeeded con booking inesistente → 
   expect(res.status).toBe(200);
   expect(res.body.received).toBe(true);
 });
+
+// ── PayPal ────────────────────────────────────────────────────────────────────
+
+test('POST /webhook/paypal senza PAYPAL_WEBHOOK_ID → 200 (dev passthrough)', async () => {
+  delete process.env.PAYPAL_WEBHOOK_ID;
+  const res = await request(app)
+    .post('/webhook/paypal')
+    .set('Content-Type', 'application/json')
+    .send(JSON.stringify({ event_type: 'PAYMENT.CAPTURE.COMPLETED', resource: {} }));
+  expect(res.status).toBe(200);
+  expect(res.body.received).toBe(true);
+});
+
+test('POST /webhook/paypal con evento PAYMENT.CAPTURE.COMPLETED senza custom_id → 200', async () => {
+  delete process.env.PAYPAL_WEBHOOK_ID;
+  const res = await request(app)
+    .post('/webhook/paypal')
+    .set('Content-Type', 'application/json')
+    .send(JSON.stringify({
+      event_type: 'PAYMENT.CAPTURE.COMPLETED',
+      resource: { id: 'capture_test_123', custom_id: null },
+    }));
+  expect(res.status).toBe(200);
+  expect(res.body.received).toBe(true);
+});
