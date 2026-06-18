@@ -22,6 +22,11 @@ pool.query(`
   )
 `).catch(err => console.error('[db] migration newsletter_subscribers:', err.message));
 
+pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(255)`)
+  .catch(err => console.error('[db] migration password_reset_token:', err.message));
+pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_scadenza TIMESTAMP`)
+  .catch(err => console.error('[db] migration password_reset_scadenza:', err.message));
+
 async function query(text, params) {
   const result = await pool.query(text, params);
   return result;

@@ -9,11 +9,68 @@ process.env.BASE_URL = 'http://localhost';
 const request = require('supertest');
 const { app, server } = require('../app/server');
 const { pool } = require('../app/db');
+const bcrypt = require('bcrypt');
 
 const TEST_EMAIL = 'test-auth-piano2@orchidea-test.local';
 
 beforeAll(async () => {
   await pool.query('DELETE FROM users WHERE email = $1', [TEST_EMAIL]);
+});
+
+test('GET /auth/password-reset ritorna 200', async () => {
+  const res = await request(app).get('/auth/password-reset');
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('password');
+});
+
+test('POST /auth/password-reset con email inesistente → 302 success (no email enumeration)', async () => {
+  const res = await request(app).post('/auth/password-reset').type('form')
+    .send({ email: 'nonexistent-reset@orchidea-test.local' });
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('success=email_inviata');
+});
+
+test('POST /auth/password-reset con email valida → token salvato nel DB', async () => {
+  const email = 'pw-reset-test@orchidea-test.local';
+  const hash = await bcrypt.hash('TestPass123!', 12);
+  await pool.query(`
+    INSERT INTO users (nome, cognome, email, telefono, password_hash, confermato)
+    VALUES ('Test', 'Reset', $1, '3001234567', $2, TRUE)
+    ON CONFLICT (email) DO NOTHING
+  `, [email, hash]);
+  const res = await request(app).post('/auth/password-reset').type('form').send({ email });
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('success=email_inviata');
+  const { rows: [user] } = await pool.query('SELECT password_reset_token FROM users WHERE email = $1', [email]);
+  expect(user.password_reset_token).not.toBeNull();
+  await pool.query('DELETE FROM users WHERE email = $1', [email]);
+});
+
+test('GET /auth/nuova-password con token inesistente mostra stato scaduto', async () => {
+  const res = await request(app).get('/auth/nuova-password?token=invalid-token-xyz-999');
+  expect(res.status).toBe(200);
+  expect(res.text).toMatch(/scaduto|non valido|link/i);
+});
+
+test('POST /auth/nuova-password con token valido aggiorna password → 302 login', async () => {
+  const email = 'pw-newpass-test@orchidea-test.local';
+  const hash = await bcrypt.hash('OldPass123!', 12);
+  const resetToken = 'valid-reset-token-' + Date.now();
+  const scadenza = new Date(Date.now() + 60 * 60 * 1000);
+  await pool.query(`
+    INSERT INTO users (nome, cognome, email, telefono, password_hash, confermato,
+                       password_reset_token, password_reset_scadenza)
+    VALUES ('Test', 'Newpass', $1, '3001234568', $2, TRUE, $3, $4)
+    ON CONFLICT (email) DO UPDATE
+      SET password_reset_token = $3, password_reset_scadenza = $4
+  `, [email, hash, resetToken, scadenza]);
+  const res = await request(app).post('/auth/nuova-password').type('form')
+    .send({ token: resetToken, password: 'NewPass456!' });
+  expect(res.status).toBe(302);
+  expect(res.headers.location).toContain('password_aggiornata');
+  const { rows: [user] } = await pool.query('SELECT password_reset_token FROM users WHERE email = $1', [email]);
+  expect(user.password_reset_token).toBeNull();
+  await pool.query('DELETE FROM users WHERE email = $1', [email]);
 });
 
 afterAll(async () => {

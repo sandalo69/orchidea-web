@@ -9,6 +9,8 @@
     <div class="alert alert-error">Compila tutti i campi.</div>
   <% } else if (query.error === 'errore_server') { %>
     <div class="alert alert-error">Errore del server. Riprova.</div>
+  <% } else if (query.success === 'password_aggiornata') { %>
+    <div class="alert alert-success">✓ Password aggiornata! Accedi con le nuove credenziali.</div>
   <% } %>
   <form method="POST" action="/auth/login">
     <div class="form-group">
@@ -20,6 +22,9 @@
       <input type="password" name="password" required autocomplete="current-password">
     </div>
     <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem;">Accedi</button>
+    <div style="text-align:right;margin-top:0.5rem;">
+      <a href="/auth/password-reset" style="color:var(--text-muted);font-size:0.85rem;">Hai dimenticato la password?</a>
+    </div>
   </form>
   <p style="text-align:center;margin-top:1.5rem;color:var(--text-muted);font-size:0.9rem;">
     Non hai un account? <a href="/auth/registra" style="color:var(--neon-purple);">Registrati</a>

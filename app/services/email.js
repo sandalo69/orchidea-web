@@ -106,4 +106,23 @@ async function sendNewsletterWelcome(nome, email) {
   });
 }
 
-module.exports = { sendConfirmationEmail, sendBulkNewsletter, sendBookingConfirmation, sendContactMessage, sendNewsletterWelcome };
+async function sendPasswordReset(to, nome, token) {
+  const link = `${process.env.BASE_URL}/auth/nuova-password?token=${token}`;
+  const html = await ejs.renderFile(
+    path.join(__dirname, '../views/emails/reset-password.ejs'),
+    { nome, link }
+  );
+  if (!process.env.SMTP_HOST) {
+    console.log(`[EMAIL] Password reset ${to}: ${link}`);
+    return;
+  }
+  await createTransporter().sendMail({
+    from: `"Orchidea" <${process.env.SMTP_USER}>`,
+    to,
+    subject: 'Reimposta la password Orchidea',
+    html,
+    text: `Ciao ${nome},\n\nReimposta la tua password: ${link}\n\nIl link scade in 1 ora.`,
+  });
+}
+
+module.exports = { sendConfirmationEmail, sendBulkNewsletter, sendBookingConfirmation, sendContactMessage, sendNewsletterWelcome, sendPasswordReset };

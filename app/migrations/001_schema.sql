@@ -14,6 +14,8 @@ CREATE TABLE IF NOT EXISTS users (
     confermato  BOOLEAN NOT NULL DEFAULT FALSE,
     token_conferma VARCHAR(255),
     token_conferma_scadenza TIMESTAMP,
+    password_reset_token    VARCHAR(255),
+    password_reset_scadenza TIMESTAMP,
     created_at  TIMESTAMP NOT NULL DEFAULT NOW()
 );
 

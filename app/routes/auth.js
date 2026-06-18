@@ -4,7 +4,7 @@ const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const db = require('../db');
 const verifyCaptcha = require('../middleware/captcha');
-const { sendConfirmationEmail } = require('../services/email');
+const { sendConfirmationEmail, sendPasswordReset } = require('../services/email');
 
 // Hash placeholder per prevenire timing attack su email inesistente
 const DUMMY_HASH = '$2b$12$invalidhashpaddingtomatchbcryptcost12xx';
@@ -99,6 +99,73 @@ router.post('/logout', (req, res) => {
     if (err) console.error('Errore distruzione sessione:', err.message);
     res.redirect('/');
   });
+});
+
+router.get('/password-reset', (req, res) => {
+  res.render('public/password-reset', { title: 'Password dimenticata', query: req.query });
+});
+
+router.post('/password-reset', async (req, res, next) => {
+  const email = (req.body.email || '').trim().toLowerCase().substring(0, 255);
+  if (!email) return res.redirect('/auth/password-reset?error=campi_mancanti');
+  try {
+    const { rows: [user] } = await db.query(
+      'SELECT id, nome FROM users WHERE email = $1 AND confermato = TRUE', [email]
+    );
+    if (user) {
+      const token = crypto.randomBytes(32).toString('hex');
+      const scadenza = new Date(Date.now() + 60 * 60 * 1000); // 1 ora
+      await db.query(
+        'UPDATE users SET password_reset_token = $1, password_reset_scadenza = $2 WHERE id = $3',
+        [token, scadenza, user.id]
+      );
+      sendPasswordReset(email, user.nome, token)
+        .catch(err => console.error('[auth] Email reset fallita:', err.message));
+    }
+    // Risposta identica per email esistente/inesistente → previene email enumeration
+    res.redirect('/auth/password-reset?success=email_inviata');
+  } catch (err) { next(err); }
+});
+
+router.get('/nuova-password', async (req, res, next) => {
+  const token = (req.query.token || '').trim();
+  if (!token) return res.redirect('/auth/password-reset?error=token_mancante');
+  try {
+    const { rows: [user] } = await db.query(
+      'SELECT id FROM users WHERE password_reset_token = $1 AND password_reset_scadenza > NOW()',
+      [token]
+    );
+    res.render('public/nuova-password', {
+      title: 'Nuova password',
+      valid: !!user,
+      token: user ? token : '',
+      query: req.query,
+    });
+  } catch (err) { next(err); }
+});
+
+router.post('/nuova-password', async (req, res, next) => {
+  const token = (req.body.token || '').trim();
+  const password = req.body.password || '';
+  if (!token) return res.redirect('/auth/password-reset?error=token_mancante');
+  if (password.length < 8) {
+    return res.redirect(`/auth/nuova-password?token=${encodeURIComponent(token)}&error=password_corta`);
+  }
+  try {
+    const { rows: [user] } = await db.query(
+      'SELECT id FROM users WHERE password_reset_token = $1 AND password_reset_scadenza > NOW()',
+      [token]
+    );
+    if (!user) {
+      return res.render('public/nuova-password', { title: 'Nuova password', valid: false, token: '', query: {} });
+    }
+    const password_hash = await bcrypt.hash(password, 12);
+    await db.query(
+      'UPDATE users SET password_hash = $1, password_reset_token = NULL, password_reset_scadenza = NULL WHERE id = $2',
+      [password_hash, user.id]
+    );
+    res.redirect('/auth/login?success=password_aggiornata');
+  } catch (err) { next(err); }
 });
 
 module.exports = router;
