@@ -32,9 +32,7 @@
   }
 
   function seatRadius(tipo) {
-    if (tipo === 'posto_singolo') return 14;
-    if (tipo === 'poltroncina_3') return 18;
-    return 22; // tavolo_tondo
+    return tipo === 'posto_singolo' ? 14 : 18;
   }
 
   function render() {

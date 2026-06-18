@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS seats (
     id          SERIAL PRIMARY KEY,
     layout_id   INTEGER NOT NULL REFERENCES layouts(id) ON DELETE CASCADE,
     tipo        VARCHAR(20) NOT NULL
-                  CHECK (tipo IN ('tavolo_tondo', 'poltroncina_3', 'posto_singolo')),
+                  CHECK (tipo IN ('poltroncina_3', 'posto_singolo')),
     pos_x       INTEGER NOT NULL,
     pos_y       INTEGER NOT NULL,
     capienza    INTEGER NOT NULL DEFAULT 1,
