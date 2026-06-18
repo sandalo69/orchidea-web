@@ -115,10 +115,11 @@ CREATE TABLE IF NOT EXISTS newsletter_sends (
 
 -- Iscritti newsletter pubblici
 CREATE TABLE IF NOT EXISTS newsletter_subscribers (
-    id         SERIAL PRIMARY KEY,
-    email      VARCHAR(255) UNIQUE NOT NULL,
-    nome       VARCHAR(100),
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    id                SERIAL PRIMARY KEY,
+    email             VARCHAR(255) UNIQUE NOT NULL,
+    nome              VARCHAR(100),
+    unsubscribe_token VARCHAR(255) UNIQUE,
+    created_at        TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- ============================================================

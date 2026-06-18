@@ -28,6 +28,11 @@
         Venerdì e Sabato: 23:00 – 05:00 ·
         <a href="mailto:orchideadisco@gmail.com" style="color:#555;">orchideadisco@gmail.com</a>
       </p>
+      <% if (locals.unsubscribeLink) { %>
+      <p style="margin:0.5rem 0 0;color:#444;font-size:0.75rem;">
+        <a href="<%= unsubscribeLink %>" style="color:#444;">Disiscriviti dalla newsletter</a>
+      </p>
+      <% } %>
     </div>
   </div>
 </body>

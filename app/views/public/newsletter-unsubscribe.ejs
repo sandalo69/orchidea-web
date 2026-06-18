@@ -1,0 +1,25 @@
+<%- include('_header', { title }) %>
+<div class="container" style="padding-top:3rem;max-width:600px;text-align:center;">
+  <% if (success) { %>
+    <div class="card" style="padding:3rem;">
+      <div style="font-size:3rem;margin-bottom:1rem;">✓</div>
+      <h1 style="font-size:1.8rem;font-weight:900;margin:0 0 1rem;color:var(--neon-cyan);">Disiscritto</h1>
+      <p style="color:var(--text-muted);line-height:1.7;">
+        Sei stato disiscritto dalla newsletter di Orchidea.<br>
+        Non riceverai più le nostre comunicazioni.
+      </p>
+      <a href="/" class="btn btn-secondary" style="margin-top:1.5rem;display:inline-block;">Torna alla home</a>
+    </div>
+  <% } else if (notFound) { %>
+    <div class="card" style="padding:3rem;">
+      <div style="font-size:3rem;margin-bottom:1rem;">ℹ️</div>
+      <h1 style="font-size:1.8rem;font-weight:900;margin:0 0 1rem;">Link non valido</h1>
+      <p style="color:var(--text-muted);line-height:1.7;">
+        Il link di disiscrizione non è valido o è già stato usato.<br>
+        Se sei già stato disiscritto, non devi fare nulla.
+      </p>
+      <a href="/" class="btn btn-secondary" style="margin-top:1.5rem;display:inline-block;">Torna alla home</a>
+    </div>
+  <% } %>
+</div>
+<%- include('_footer') %>

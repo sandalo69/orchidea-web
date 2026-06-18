@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const emailService = require('../services/email');
+const crypto = require('crypto');
 
 router.get('/', async (req, res, next) => {
   try {
@@ -109,15 +110,38 @@ router.post('/newsletter/subscribe', async (req, res, next) => {
     return res.redirect('/?newsletter=error');
   }
   try {
+    const unsubscribeToken = crypto.randomBytes(32).toString('hex');
     const result = await db.query(
-      'INSERT INTO newsletter_subscribers (email, nome) VALUES ($1, $2) ON CONFLICT (email) DO NOTHING',
-      [email, nome || null]
+      'INSERT INTO newsletter_subscribers (email, nome, unsubscribe_token) VALUES ($1, $2, $3) ON CONFLICT (email) DO NOTHING',
+      [email, nome || null, unsubscribeToken]
     );
     if (result.rowCount > 0) {
-      emailService.sendNewsletterWelcome(nome, email)
+      emailService.sendNewsletterWelcome(nome, email, unsubscribeToken)
         .catch(err => console.error('[newsletter]', err.message));
     }
     res.redirect('/?newsletter=ok');
+  } catch (err) { next(err); }
+});
+
+router.get('/newsletter/unsubscribe', async (req, res, next) => {
+  const token = (req.query.token || '').trim();
+  if (!token) {
+    return res.render('public/newsletter-unsubscribe', {
+      title: 'Disiscrizione newsletter',
+      success: false,
+      notFound: true,
+    });
+  }
+  try {
+    const result = await db.query(
+      'DELETE FROM newsletter_subscribers WHERE unsubscribe_token = $1 RETURNING email',
+      [token]
+    );
+    res.render('public/newsletter-unsubscribe', {
+      title: 'Disiscrizione newsletter',
+      success: result.rowCount > 0,
+      notFound: result.rowCount === 0,
+    });
   } catch (err) { next(err); }
 });
 

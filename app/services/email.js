@@ -88,10 +88,13 @@ async function sendContactMessage(nome, emailMittente, messaggio) {
   });
 }
 
-async function sendNewsletterWelcome(nome, email) {
+async function sendNewsletterWelcome(nome, email, unsubscribeToken) {
+  const unsubscribeLink = unsubscribeToken
+    ? `${process.env.BASE_URL || 'https://orchidea.it'}/newsletter/unsubscribe?token=${unsubscribeToken}`
+    : null;
   const html = await ejs.renderFile(
     path.join(__dirname, '../views/emails/newsletter-welcome.ejs'),
-    { nome, baseUrl: process.env.BASE_URL || 'https://orchidea.it' }
+    { nome, baseUrl: process.env.BASE_URL || 'https://orchidea.it', unsubscribeLink }
   );
   if (!process.env.SMTP_HOST) {
     console.log(`[EMAIL] Newsletter welcome: ${email}`);
@@ -102,7 +105,7 @@ async function sendNewsletterWelcome(nome, email) {
     to: email,
     subject: 'Benvenuto nella newsletter Orchidea! 🌸',
     html,
-    text: `Ciao${nome ? ' ' + nome : ''}!\n\nSei iscritto/a alla newsletter di Orchidea.\nRiceverai in anteprima le date delle nostre serate.\n\nOrchidea\nVia U. Maddalena 40, Rottanova (VE) 30014`,
+    text: `Ciao${nome ? ' ' + nome : ''}!\n\nSei iscritto/a alla newsletter di Orchidea.\nRiceverai in anteprima le date delle nostre serate.\n\n${unsubscribeLink ? 'Per disiscriverti: ' + unsubscribeLink + '\n\n' : ''}Orchidea\nVia U. Maddalena 40, Rottanova (VE) 30014`,
   });
 }
 

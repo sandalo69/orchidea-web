@@ -114,6 +114,7 @@ test('newsletter-welcome.ejs renderizza senza errori con nome e senza nome', asy
   const htmlConNome = await ejs.renderFile(templatePath, {
     nome: 'Giulia',
     baseUrl: 'http://localhost',
+    unsubscribeLink: null,
   });
   expect(htmlConNome).toContain('Giulia');
   expect(htmlConNome).toContain('newsletter');
@@ -122,7 +123,41 @@ test('newsletter-welcome.ejs renderizza senza errori con nome e senza nome', asy
   const htmlSenzaNome = await ejs.renderFile(templatePath, {
     nome: '',
     baseUrl: 'http://localhost',
+    unsubscribeLink: null,
   });
   expect(htmlSenzaNome).toContain('newsletter');
   expect(htmlSenzaNome).not.toContain('undefined');
+});
+
+test('POST /newsletter/subscribe genera unsubscribe_token nel DB', async () => {
+  const email = 'unsub-token-test@orchidea-test.local';
+  await pool.query("DELETE FROM newsletter_subscribers WHERE email = $1", [email]);
+  await request(app).post('/newsletter/subscribe').type('form')
+    .send({ email, nome: 'Test Unsub' });
+  const { rows: [row] } = await pool.query(
+    'SELECT unsubscribe_token FROM newsletter_subscribers WHERE email = $1', [email]
+  );
+  expect(row).toBeDefined();
+  expect(row.unsubscribe_token).toBeTruthy();
+  await pool.query("DELETE FROM newsletter_subscribers WHERE email = $1", [email]);
+});
+
+test('GET /newsletter/unsubscribe con token valido → 200 e rimozione dal DB', async () => {
+  const email = 'unsub-valid-test@orchidea-test.local';
+  const token = 'test-unsub-token-valid-' + Date.now();
+  await pool.query(
+    "INSERT INTO newsletter_subscribers (email, nome, unsubscribe_token) VALUES ($1, 'Test', $2) ON CONFLICT (email) DO UPDATE SET unsubscribe_token = $2",
+    [email, token]
+  );
+  const res = await request(app).get(`/newsletter/unsubscribe?token=${token}`);
+  expect(res.status).toBe(200);
+  expect(res.text).toContain('disiscritto');
+  const { rows } = await pool.query('SELECT id FROM newsletter_subscribers WHERE email = $1', [email]);
+  expect(rows.length).toBe(0);
+});
+
+test('GET /newsletter/unsubscribe con token inesistente → 200 con messaggio not found', async () => {
+  const res = await request(app).get('/newsletter/unsubscribe?token=nonexistent-token-xyz-999');
+  expect(res.status).toBe(200);
+  expect(res.text).toMatch(/non trovato|già disiscritto|non valido/i);
 });
