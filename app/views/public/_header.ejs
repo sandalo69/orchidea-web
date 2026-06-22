@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><%= locals.title ? locals.title + ' — ' : '' %>Orchidea</title>
+  <title><%= locals.title ? locals.title + ' — ' : '' %>Orchidea Disco</title>
   <meta name="description" content="<%= locals.metaDescription || 'Orchidea Disco — Rottanova (VE). Prenota i tuoi posti per le nostre serate, venerdì e sabato dalle 23:00.' %>">
-  <meta property="og:title" content="<%= locals.title ? locals.title + ' — ' : '' %>Orchidea">
+  <meta property="og:title" content="<%= locals.title ? locals.title + ' — ' : '' %>Orchidea Disco">
   <meta property="og:description" content="<%= locals.metaDescription || 'Orchidea Disco — Rottanova (VE). Prenota i tuoi posti per le nostre serate, venerdì e sabato dalle 23:00.' %>">
   <meta property="og:type" content="website">
   <meta property="og:url" content="<%= (process.env.BASE_URL || 'https://orchidea.it') + (locals.ogPath || '/') %>">
@@ -14,7 +14,10 @@
 </head>
 <body>
 <nav class="main-nav">
-  <a href="/" class="logo"><img src="/img/logo.jpeg" alt="Orchidea" style="height:40px;vertical-align:middle;"></a>
+  <a href="/" class="logo" style="display:flex;align-items:center;gap:8px;">
+    <img src="/img/logo.jpeg" alt="Orchidea Disco" style="height:40px;">
+    <img src="/img/scritta.png" alt="Orchidea Disco" style="height:30px;">
+  </a>
   <button id="nav-toggle" class="nav-toggle" aria-label="Menu">☰</button>
   <div class="nav-links" id="nav-links">
     <a href="/eventi">Eventi</a>
