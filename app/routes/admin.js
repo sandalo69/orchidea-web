@@ -387,6 +387,18 @@ router.get('/galleria/:id/modifica', requireAdmin, async (req, res, next) => {
   }
 });
 
+router.post('/galleria/elimina-bulk', requireAdmin, async (req, res, next) => {
+  try {
+    const ids = Array.isArray(req.body.ids) ? req.body.ids : req.body.ids ? [req.body.ids] : [];
+    if (ids.length > 0) {
+      await db.query(`DELETE FROM gallery WHERE id = ANY($1::int[])`, [ids]);
+    }
+    res.redirect('/admin/galleria');
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.post('/galleria/:id', requireAdmin, upload.single('foto'), async (req, res, next) => {
   const { didascalia, event_id } = req.body;
   try {
@@ -410,18 +422,6 @@ router.post('/galleria/:id', requireAdmin, upload.single('foto'), async (req, re
 router.post('/galleria/:id/elimina', requireAdmin, async (req, res, next) => {
   try {
     await db.query('DELETE FROM gallery WHERE id = $1', [req.params.id]);
-    res.redirect('/admin/galleria');
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.post('/galleria/elimina-bulk', requireAdmin, async (req, res, next) => {
-  try {
-    const ids = Array.isArray(req.body.ids) ? req.body.ids : req.body.ids ? [req.body.ids] : [];
-    if (ids.length > 0) {
-      await db.query(`DELETE FROM gallery WHERE id = ANY($1::int[])`, [ids]);
-    }
     res.redirect('/admin/galleria');
   } catch (err) {
     next(err);
