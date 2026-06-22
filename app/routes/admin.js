@@ -335,12 +335,36 @@ router.post('/dj/:id/elimina', requireAdmin, async (req, res, next) => {
 
 router.get('/galleria', requireAdmin, async (req, res, next) => {
   try {
-    const { rows } = await db.query(
-      `SELECT g.*, e.titolo AS evento_titolo FROM gallery g
-       LEFT JOIN events e ON g.event_id = e.id
-       ORDER BY g.created_at DESC`
-    );
-    res.render('admin/galleria/lista', { title: 'Galleria', active: 'galleria', foto: rows });
+    const eventoId = req.query.evento || null;
+    if (eventoId) {
+      const where = eventoId === 'nessuno' ? 'g.event_id IS NULL' : 'g.event_id = $1';
+      const params = eventoId === 'nessuno' ? [] : [eventoId];
+      const { rows: foto } = await db.query(
+        `SELECT g.*, e.titolo AS evento_titolo FROM gallery g
+         LEFT JOIN events e ON g.event_id = e.id
+         WHERE ${where} ORDER BY g.created_at ASC`,
+        params
+      );
+      const evento = eventoId === 'nessuno'
+        ? { id: 'nessuno', titolo: 'Foto senza evento' }
+        : (await db.query('SELECT id, titolo FROM events WHERE id=$1', [eventoId])).rows[0];
+      res.render('admin/galleria/lista', { title: 'Galleria', active: 'galleria', foto, evento, eventi: null });
+    } else {
+      const { rows: eventi } = await db.query(
+        `SELECT e.id, e.titolo, e.data_evento,
+           COUNT(g.id)::int AS num_foto,
+           (SELECT g2.foto_path FROM gallery g2 WHERE g2.event_id = e.id ORDER BY g2.created_at ASC LIMIT 1) AS copertina
+         FROM events e
+         LEFT JOIN gallery g ON g.event_id = e.id
+         GROUP BY e.id ORDER BY e.data_evento DESC`
+      );
+      const { rows: [ns] } = await db.query(
+        `SELECT COUNT(*)::int AS num_foto,
+           (SELECT foto_path FROM gallery WHERE event_id IS NULL ORDER BY created_at ASC LIMIT 1) AS copertina
+         FROM gallery WHERE event_id IS NULL`
+      );
+      res.render('admin/galleria/lista', { title: 'Galleria', active: 'galleria', foto: null, evento: null, eventi, senzaEvento: ns });
+    }
   } catch (err) {
     next(err);
   }
