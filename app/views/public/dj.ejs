@@ -14,7 +14,7 @@
             <div style="width:100%;aspect-ratio:1;background:var(--bg-surface);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem;border:1px solid var(--border);font-size:3rem;">🎧</div>
           <% } %>
           <h2 style="font-size:1.3rem;color:var(--neon-fuchsia);"><%= dj.nome %></h2>
-          <p style="margin-top:0.5rem;"><%= dj.bio || '' %></p>
+          <div style="margin-top:0.5rem;line-height:1.7;"><%- dj.bio_html || '' %></div>
         </div>
       <% }) %>
     </div>

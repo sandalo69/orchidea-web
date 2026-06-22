@@ -5,6 +5,7 @@ const emailService = require('../services/email');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const requireUser = require('../middleware/auth');
+const { marked } = require('marked');
 
 router.get('/', async (req, res, next) => {
   try {
@@ -48,7 +49,8 @@ router.get('/eventi/:id', async (req, res, next) => {
 router.get('/dj', async (req, res, next) => {
   try {
     const { rows } = await db.query(`SELECT * FROM dj_profiles ORDER BY ordine ASC`);
-    res.render('public/dj', { title: 'DJ', djs: rows });
+    const djs = rows.map(dj => ({ ...dj, bio_html: dj.bio ? marked(dj.bio) : '' }));
+    res.render('public/dj', { title: 'DJ', djs });
   } catch (err) {
     next(err);
   }
