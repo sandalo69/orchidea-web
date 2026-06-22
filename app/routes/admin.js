@@ -355,14 +355,16 @@ router.get('/galleria/nuovo', requireAdmin, async (req, res, next) => {
   }
 });
 
-router.post('/galleria', requireAdmin, upload.single('foto'), async (req, res, next) => {
-  if (!req.file) return res.redirect('/admin/galleria/nuovo?error=no_file');
+router.post('/galleria', requireAdmin, upload.array('foto', 30), async (req, res, next) => {
+  if (!req.files || req.files.length === 0) return res.redirect('/admin/galleria/nuovo?error=no_file');
   const { didascalia, event_id } = req.body;
   try {
-    await db.query(
-      'INSERT INTO gallery (foto_path, didascalia, event_id) VALUES ($1, $2, $3)',
-      [req.file.filename, didascalia || null, event_id || null]
-    );
+    for (const file of req.files) {
+      await db.query(
+        'INSERT INTO gallery (foto_path, didascalia, event_id) VALUES ($1, $2, $3)',
+        [file.filename, didascalia || null, event_id || null]
+      );
+    }
     res.redirect('/admin/galleria');
   } catch (err) {
     next(err);

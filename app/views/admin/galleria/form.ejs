@@ -8,7 +8,8 @@
   <form method="POST" action="<%= foto ? '/admin/galleria/' + foto.id : '/admin/galleria' %>" enctype="multipart/form-data">
     <div class="form-group">
       <label>Foto * (JPG/PNG/WEBP, max 5MB)</label>
-      <input type="file" name="foto" accept=".jpg,.jpeg,.png,.webp" required style="color:var(--text-primary);">
+      <input type="file" name="foto" accept=".jpg,.jpeg,.png,.webp" required multiple style="color:var(--text-primary);">
+      <small style="color:var(--text-muted);">Puoi selezionare più foto tenendo Ctrl (o Cmd su Mac)</small>
     </div>
     <div class="form-group">
       <label>Didascalia</label>

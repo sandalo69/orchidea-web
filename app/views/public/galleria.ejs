@@ -2,13 +2,27 @@
 <div class="container" style="padding-top:3rem;">
   <div class="section-label">Le nostre notti</div>
   <h1 class="section-title">Galleria</h1>
+
+  <% if (eventi.length > 0) { %>
+  <div style="margin-bottom:2rem;">
+    <select onchange="location.href='/galleria' + (this.value ? '?evento=' + this.value : '')"
+            style="background:var(--card-bg);border:1px solid var(--border);color:var(--text-primary);padding:0.6rem 1rem;border-radius:6px;font-size:0.95rem;cursor:pointer;">
+      <option value="" <%= !eventoSelezionato ? 'selected' : '' %>>Tutte le foto</option>
+      <% eventi.forEach(ev => { %>
+        <option value="<%= ev.id %>" <%= eventoSelezionato == ev.id ? 'selected' : '' %>><%= ev.titolo %></option>
+      <% }) %>
+    </select>
+  </div>
+  <% } %>
+
   <% if (foto.length === 0) { %>
     <p style="color:var(--text-muted);">Nessuna foto disponibile.</p>
   <% } else { %>
-    <div class="gallery-grid">
+    <div class="gallery-grid" id="gallery-grid">
       <% foto.forEach(f => { %>
         <div class="gallery-item">
-          <img src="/uploads/<%= f.foto_path %>" alt="<%= f.didascalia || '' %>">
+          <img src="/uploads/<%= f.foto_path %>" alt="<%= f.didascalia || '' %>"
+               draggable="false" style="-webkit-user-drag:none;">
           <% if (f.didascalia || f.evento_titolo) { %>
             <p style="margin-top:0.4rem;font-size:0.8rem;color:var(--text-muted);">
               <%= f.didascalia || '' %><% if (f.evento_titolo) { %> — <%= f.evento_titolo %><% } %>
@@ -19,4 +33,9 @@
     </div>
   <% } %>
 </div>
+<script>
+  document.getElementById('gallery-grid') && document.getElementById('gallery-grid').addEventListener('contextmenu', function(e) {
+    if (e.target.tagName === 'IMG') e.preventDefault();
+  });
+</script>
 <%- include('_footer') %>

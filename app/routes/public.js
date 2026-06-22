@@ -58,12 +58,20 @@ router.get('/dj', async (req, res, next) => {
 
 router.get('/galleria', async (req, res, next) => {
   try {
-    const { rows } = await db.query(
+    const eventId = req.query.evento || null;
+    const { rows: foto } = await db.query(
       `SELECT g.*, e.titolo AS evento_titolo FROM gallery g
        LEFT JOIN events e ON g.event_id = e.id
-       ORDER BY g.created_at DESC`
+       ${eventId ? 'WHERE g.event_id=$1' : ''}
+       ORDER BY g.created_at DESC`,
+      eventId ? [eventId] : []
     );
-    res.render('public/galleria', { title: 'Galleria', foto: rows });
+    const { rows: eventi } = await db.query(
+      `SELECT DISTINCT e.id, e.titolo FROM events e
+       INNER JOIN gallery g ON g.event_id = e.id
+       ORDER BY e.titolo`
+    );
+    res.render('public/galleria', { title: 'Galleria', foto, eventi, eventoSelezionato: eventId });
   } catch (err) {
     next(err);
   }
