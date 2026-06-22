@@ -355,7 +355,12 @@ router.get('/galleria/nuovo', requireAdmin, async (req, res, next) => {
   }
 });
 
-router.post('/galleria', requireAdmin, upload.array('foto', 30), async (req, res, next) => {
+router.post('/galleria', requireAdmin, (req, res, next) => {
+  upload.array('foto', 200)(req, res, err => {
+    if (err) return next(err);
+    next();
+  });
+}, async (req, res, next) => {
   if (!req.files || req.files.length === 0) return res.redirect('/admin/galleria/nuovo?error=no_file');
   const { didascalia, event_id } = req.body;
   try {
