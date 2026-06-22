@@ -1,13 +1,14 @@
 <%- include('_header', { title }) %>
 <style>
-#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;align-items:center;justify-content:center;}
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;align-items:center;justify-content:center;}
 #lightbox.aperto{display:flex;}
-#lightbox img{max-width:95vw;max-height:92vh;object-fit:contain;border-radius:4px;pointer-events:none;user-select:none;-webkit-user-drag:none;}
-#lightbox-close{position:fixed;top:1rem;right:1.5rem;font-size:2.5rem;color:#fff;cursor:pointer;line-height:1;z-index:10000;}
+#lightbox-img{width:90vw;height:88vh;background-size:contain;background-repeat:no-repeat;background-position:center;}
+#lightbox-close{position:fixed;top:1rem;right:1.5rem;font-size:2.5rem;color:#fff;cursor:pointer;line-height:1;z-index:10000;user-select:none;}
+.gallery-thumb{width:100%;aspect-ratio:4/3;background-size:cover;background-position:center;border-radius:6px;cursor:pointer;border:1px solid var(--border);}
 </style>
 <div id="lightbox" onclick="chiudiLightbox()">
   <span id="lightbox-close">✕</span>
-  <img id="lightbox-img" src="" alt="">
+  <div id="lightbox-img"></div>
 </div>
 <div class="container" style="padding-top:3rem;">
   <div class="section-label">Le nostre notti</div>
@@ -31,9 +32,9 @@
     <div class="gallery-grid">
       <% foto.forEach(f => { %>
         <div class="gallery-item">
-          <img src="/uploads/<%= f.foto_path %>" alt="<%= f.didascalia || '' %>"
-               draggable="false" style="-webkit-user-drag:none;cursor:pointer;"
-               onclick="apriLightbox(this.src)">
+          <div class="gallery-thumb"
+               style="background-image:url('/uploads/<%= f.foto_path %>');"
+               onclick="apriLightbox('/uploads/<%= f.foto_path %>')"></div>
           <% if (f.didascalia || f.evento_titolo) { %>
             <p style="margin-top:0.4rem;font-size:0.8rem;color:var(--text-muted);">
               <%= f.didascalia || '' %><% if (f.evento_titolo) { %> — <%= f.evento_titolo %><% } %>
@@ -46,16 +47,16 @@
 </div>
 <script>
   function apriLightbox(src) {
-    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox-img').style.backgroundImage = "url('" + src + "')";
     document.getElementById('lightbox').classList.add('aperto');
     document.body.style.overflow = 'hidden';
   }
   function chiudiLightbox() {
     document.getElementById('lightbox').classList.remove('aperto');
-    document.getElementById('lightbox-img').src = '';
+    document.getElementById('lightbox-img').style.backgroundImage = '';
     document.body.style.overflow = '';
   }
   document.addEventListener('keydown', e => { if (e.key === 'Escape') chiudiLightbox(); });
-  document.addEventListener('contextmenu', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
+  document.addEventListener('contextmenu', e => e.preventDefault());
 </script>
 <%- include('_footer') %>
