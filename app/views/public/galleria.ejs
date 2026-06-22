@@ -21,8 +21,10 @@
     <div class="gallery-grid" id="gallery-grid">
       <% foto.forEach(f => { %>
         <div class="gallery-item">
-          <img src="/uploads/<%= f.foto_path %>" alt="<%= f.didascalia || '' %>"
-               draggable="false" style="-webkit-user-drag:none;">
+          <a href="/uploads/<%= f.foto_path %>" target="_blank" rel="noopener">
+            <img src="/uploads/<%= f.foto_path %>" alt="<%= f.didascalia || '' %>"
+                 draggable="false" style="-webkit-user-drag:none;cursor:pointer;">
+          </a>
           <% if (f.didascalia || f.evento_titolo) { %>
             <p style="margin-top:0.4rem;font-size:0.8rem;color:var(--text-muted);">
               <%= f.didascalia || '' %><% if (f.evento_titolo) { %> — <%= f.evento_titolo %><% } %>

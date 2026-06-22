@@ -416,6 +416,18 @@ router.post('/galleria/:id/elimina', requireAdmin, async (req, res, next) => {
   }
 });
 
+router.post('/galleria/elimina-bulk', requireAdmin, async (req, res, next) => {
+  try {
+    const ids = Array.isArray(req.body.ids) ? req.body.ids : req.body.ids ? [req.body.ids] : [];
+    if (ids.length > 0) {
+      await db.query(`DELETE FROM gallery WHERE id = ANY($1::int[])`, [ids]);
+    }
+    res.redirect('/admin/galleria');
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ── CRUD: News ─────────────────────────────────────────────────────────────
 
 router.get('/news', requireAdmin, async (req, res, next) => {

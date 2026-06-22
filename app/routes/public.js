@@ -25,7 +25,9 @@ router.get('/', async (req, res, next) => {
 router.get('/eventi', async (req, res, next) => {
   try {
     const { rows } = await db.query(
-      `SELECT * FROM events WHERE pubblicato = TRUE ORDER BY data_evento ASC`
+      `SELECT e.*,
+        (SELECT g.foto_path FROM gallery g WHERE g.event_id = e.id ORDER BY g.created_at ASC LIMIT 1) AS copertina
+       FROM events e WHERE pubblicato = TRUE ORDER BY data_evento DESC`
     );
     res.render('public/eventi', { title: 'Eventi', eventi: rows });
   } catch (err) {
@@ -40,7 +42,11 @@ router.get('/eventi/:id', async (req, res, next) => {
       [req.params.id]
     );
     if (!rows[0]) return res.status(404).render('public/404', { title: '404' });
-    res.render('public/evento', { title: rows[0].titolo, evento: rows[0] });
+    const { rows: foto } = await db.query(
+      `SELECT * FROM gallery WHERE event_id = $1 ORDER BY created_at ASC`,
+      [req.params.id]
+    );
+    res.render('public/evento', { title: rows[0].titolo, evento: rows[0], foto });
   } catch (err) {
     next(err);
   }

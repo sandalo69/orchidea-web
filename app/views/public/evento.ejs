@@ -26,5 +26,26 @@
       </div>
     <% } %>
   </div>
+  <% if (foto && foto.length > 0) { %>
+  <div style="margin-top:3rem;">
+    <div class="section-label">Fotografie</div>
+    <h2 class="section-title" style="font-size:1.5rem;">Gallery serata</h2>
+    <div class="gallery-grid" id="gallery-grid">
+      <% foto.forEach(f => { %>
+        <div class="gallery-item">
+          <a href="/uploads/<%= f.foto_path %>" target="_blank" rel="noopener">
+            <img src="/uploads/<%= f.foto_path %>" alt="<%= f.didascalia || '' %>"
+                 draggable="false" style="-webkit-user-drag:none;cursor:pointer;">
+          </a>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+  <script>
+    document.getElementById('gallery-grid') && document.getElementById('gallery-grid').addEventListener('contextmenu', function(e) {
+      if (e.target.tagName === 'IMG') e.preventDefault();
+    });
+  </script>
+  <% } %>
 </div>
 <%- include('_footer') %>

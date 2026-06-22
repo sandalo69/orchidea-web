@@ -1,7 +1,7 @@
 <%- include('_header', { title }) %>
 <div class="container" style="padding-top:3rem;">
   <div class="section-label">Calendario</div>
-  <h1 class="section-title">Prossimi eventi</h1>
+  <h1 class="section-title">Eventi</h1>
   <% if (eventi.length === 0) { %>
     <div class="card" style="text-align:center;padding:3rem;">
       <p style="color:var(--text-muted);">Nessun evento programmato al momento. Torna presto!</p>
@@ -17,19 +17,27 @@
       <h2 style="font-size:1.8rem;font-weight:900;color:var(--neon-purple);margin:2rem 0 1rem;border-bottom:1px solid var(--border);padding-bottom:0.5rem;"><%= anno %></h2>
       <div class="grid grid-2">
         <% perAnno[anno].forEach(ev => { %>
-          <a href="/eventi/<%= ev.id %>" class="card" style="display:block;">
-            <div class="card-label">
-              <%= new Date(ev.data_evento).toLocaleDateString('it-IT', {weekday:'long',day:'numeric',month:'long'}) %>
-            </div>
-            <h2 style="font-size:1.4rem;margin:0.5rem 0;"><%= ev.titolo %></h2>
-            <p><%= ev.descrizione ? ev.descrizione.substring(0,200) : '' %></p>
-            <div style="margin-top:1.2rem;display:flex;gap:1rem;align-items:center;">
-              <span style="color:var(--neon-cyan);">€<%= ev.costo_acconto %>/posto</span>
-              <% if (ev.prenotazioni_aperte) { %>
-                <span class="badge badge-green">Prenotazioni aperte</span>
-              <% } else { %>
-                <span class="badge badge-gray">Prenotazioni chiuse</span>
-              <% } %>
+          <a href="/eventi/<%= ev.id %>" class="card" style="display:block;padding:0;overflow:hidden;">
+            <% if (ev.copertina) { %>
+              <img src="/uploads/<%= ev.copertina %>" alt="<%= ev.titolo %>"
+                   style="width:100%;aspect-ratio:16/9;object-fit:cover;" draggable="false">
+            <% } else { %>
+              <div style="width:100%;aspect-ratio:16/9;background:var(--bg-surface);display:flex;align-items:center;justify-content:center;font-size:3rem;">🎵</div>
+            <% } %>
+            <div style="padding:1.2rem;">
+              <div class="card-label">
+                <%= new Date(ev.data_evento).toLocaleDateString('it-IT', {weekday:'long',day:'numeric',month:'long'}) %>
+              </div>
+              <h2 style="font-size:1.4rem;margin:0.5rem 0;"><%= ev.titolo %></h2>
+              <p style="color:var(--text-muted);font-size:0.9rem;"><%= ev.descrizione ? ev.descrizione.substring(0,120) : '' %></p>
+              <div style="margin-top:1rem;display:flex;gap:1rem;align-items:center;">
+                <span style="color:var(--neon-cyan);">€<%= ev.costo_acconto %>/posto</span>
+                <% if (ev.prenotazioni_aperte) { %>
+                  <span class="badge badge-green">Prenotazioni aperte</span>
+                <% } else { %>
+                  <span class="badge badge-gray">Prenotazioni chiuse</span>
+                <% } %>
+              </div>
             </div>
           </a>
         <% }) %>
