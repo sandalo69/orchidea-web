@@ -27,24 +27,42 @@
     <% } %>
   </div>
   <% if (foto && foto.length > 0) { %>
+  <style>
+    #lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;align-items:center;justify-content:center;}
+    #lightbox.aperto{display:flex;}
+    #lightbox img{max-width:95vw;max-height:92vh;object-fit:contain;border-radius:4px;pointer-events:none;user-select:none;-webkit-user-drag:none;}
+    #lightbox-close{position:fixed;top:1rem;right:1.5rem;font-size:2.5rem;color:#fff;cursor:pointer;line-height:1;z-index:10000;}
+  </style>
+  <div id="lightbox" onclick="chiudiLightbox()">
+    <span id="lightbox-close">✕</span>
+    <img id="lightbox-img" src="" alt="">
+  </div>
   <div style="margin-top:3rem;">
     <div class="section-label">Fotografie</div>
     <h2 class="section-title" style="font-size:1.5rem;">Gallery serata</h2>
-    <div class="gallery-grid" id="gallery-grid">
+    <div class="gallery-grid">
       <% foto.forEach(f => { %>
         <div class="gallery-item">
-          <a href="/uploads/<%= f.foto_path %>" target="_blank" rel="noopener">
-            <img src="/uploads/<%= f.foto_path %>" alt="<%= f.didascalia || '' %>"
-                 draggable="false" style="-webkit-user-drag:none;cursor:pointer;">
-          </a>
+          <img src="/uploads/<%= f.foto_path %>" alt="<%= f.didascalia || '' %>"
+               draggable="false" style="-webkit-user-drag:none;cursor:pointer;"
+               onclick="apriLightbox(this.src)">
         </div>
       <% }) %>
     </div>
   </div>
   <script>
-    document.getElementById('gallery-grid') && document.getElementById('gallery-grid').addEventListener('contextmenu', function(e) {
-      if (e.target.tagName === 'IMG') e.preventDefault();
-    });
+    function apriLightbox(src) {
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox').classList.add('aperto');
+      document.body.style.overflow = 'hidden';
+    }
+    function chiudiLightbox() {
+      document.getElementById('lightbox').classList.remove('aperto');
+      document.getElementById('lightbox-img').src = '';
+      document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') chiudiLightbox(); });
+    document.addEventListener('contextmenu', e => { if (e.target.tagName === 'IMG') e.preventDefault(); });
   </script>
   <% } %>
 </div>
