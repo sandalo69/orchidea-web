@@ -14,6 +14,7 @@
         <th>Telefono</th>
         <th>Confermato</th>
         <th>Registrato</th>
+        <th></th>
       </tr>
     </thead>
     <tbody>
@@ -30,6 +31,7 @@
         <td style="color:var(--text-muted);">
           <%= new Date(u.created_at).toLocaleDateString('it-IT') %>
         </td>
+        <td><a href="/admin/utenti/<%= u.id %>/modifica" class="btn btn-secondary btn-sm">Modifica</a></td>
       </tr>
       <% }) %>
     </tbody>

@@ -562,4 +562,38 @@ router.get('/utenti', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+router.get('/utenti/:id/modifica', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows: [utente] } = await db.query(
+      `SELECT id, nome, cognome, email, telefono, confermato FROM users WHERE id=$1`, [req.params.id]
+    );
+    if (!utente) return res.redirect('/admin/utenti');
+    res.render('admin/utenti/modifica', { title: 'Modifica utente', active: 'utenti', utente, success: req.query.success });
+  } catch (err) { next(err); }
+});
+
+router.post('/utenti/:id', requireAdmin, async (req, res, next) => {
+  try {
+    const { nome, cognome, email, telefono, confermato, password } = req.body;
+    await db.query(
+      `UPDATE users SET nome=$1, cognome=$2, email=$3, telefono=$4, confermato=$5 WHERE id=$6`,
+      [nome.trim(), cognome.trim(), email.trim(), telefono.trim(), confermato === 'on', req.params.id]
+    );
+    if (password && password.trim().length >= 6) {
+      const bcrypt = require('bcrypt');
+      const hash = await bcrypt.hash(password.trim(), 10);
+      await db.query(`UPDATE users SET password_hash=$1 WHERE id=$2`, [hash, req.params.id]);
+    }
+    res.redirect(`/admin/utenti/${req.params.id}/modifica?success=1`);
+  } catch (err) { next(err); }
+});
+
+router.post('/utenti/:id/elimina', requireAdmin, async (req, res, next) => {
+  try {
+    await db.query(`DELETE FROM bookings WHERE user_id=$1`, [req.params.id]);
+    await db.query(`DELETE FROM users WHERE id=$1`, [req.params.id]);
+    res.redirect('/admin/utenti');
+  } catch (err) { next(err); }
+});
+
 module.exports = router;
