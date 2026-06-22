@@ -8,8 +8,18 @@
     <p style="color:var(--text-muted);margin-top:0.5rem;">Utenti confermati</p>
   </div>
   <div class="card" style="text-align:center;">
-    <div style="font-size:2.5rem;font-weight:900;color:var(--neon-purple);"><%= stats.eventi %></div>
-    <p style="color:var(--text-muted);margin-top:0.5rem;">Serate totali</p>
+    <p style="color:var(--text-muted);margin-bottom:0.8rem;">Serate</p>
+    <div style="display:flex;justify-content:center;gap:2rem;">
+      <div>
+        <div style="font-size:2.2rem;font-weight:900;color:#ff4d4d;"><%= stats.eventiPassati %></div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.3rem;">passate</div>
+      </div>
+      <div style="width:1px;background:var(--border);"></div>
+      <div>
+        <div style="font-size:2.2rem;font-weight:900;color:#00cc66;"><%= stats.eventiFuturi %></div>
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.3rem;">in programma</div>
+      </div>
+    </div>
   </div>
   <div class="card" style="text-align:center;">
     <div style="font-size:2.5rem;font-weight:900;color:var(--neon-fuchsia);"><%= stats.prenotazioni %></div>

@@ -66,9 +66,10 @@ router.post('/logout', (req, res) => {
 
 router.get('/', requireAdmin, async (req, res, next) => {
   try {
-    const [utenti, eventi, prenotazioni, dj] = await Promise.all([
+    const [utenti, eventiPassati, eventiFuturi, prenotazioni, dj] = await Promise.all([
       db.query('SELECT COUNT(*) FROM users WHERE confermato = TRUE'),
-      db.query('SELECT COUNT(*) FROM events'),
+      db.query('SELECT COUNT(*) FROM events WHERE data_evento < NOW()'),
+      db.query('SELECT COUNT(*) FROM events WHERE data_evento >= NOW()'),
       db.query("SELECT COUNT(*) FROM bookings WHERE stato = 'confermata'"),
       db.query('SELECT COUNT(*) FROM dj_profiles'),
     ]);
@@ -77,7 +78,8 @@ router.get('/', requireAdmin, async (req, res, next) => {
       active: 'dashboard',
       stats: {
         utenti: parseInt(utenti.rows[0].count),
-        eventi: parseInt(eventi.rows[0].count),
+        eventiPassati: parseInt(eventiPassati.rows[0].count),
+        eventiFuturi: parseInt(eventiFuturi.rows[0].count),
         prenotazioni: parseInt(prenotazioni.rows[0].count),
         dj: parseInt(dj.rows[0].count),
       },
