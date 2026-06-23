@@ -30,8 +30,7 @@
               </div>
               <h2 style="font-size:1.4rem;margin:0.5rem 0;"><%= ev.titolo %></h2>
               <p style="color:var(--text-muted);font-size:0.9rem;"><%= ev.descrizione ? ev.descrizione.substring(0,120) : '' %></p>
-              <div style="margin-top:1rem;display:flex;gap:1rem;align-items:center;">
-                <span style="color:var(--neon-cyan);">€<%= ev.costo_acconto %>/posto</span>
+              <div style="margin-top:1rem;">
                 <% if (ev.prenotazioni_aperte) { %>
                   <span class="badge badge-green">Prenotazioni aperte</span>
                 <% } else { %>
