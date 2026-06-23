@@ -1,0 +1,179 @@
+<%- include('../_header', { title, active }) %>
+<style>
+.editor-wrap{display:flex;gap:0;height:calc(100vh - 130px);overflow:hidden;}
+.editor-sidebar{width:180px;flex-shrink:0;background:var(--bg-surface);border-right:1px solid var(--border);padding:1rem;overflow-y:auto;display:flex;flex-direction:column;gap:0.5rem;}
+.editor-sidebar h3{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin:0.5rem 0 0.3rem;}
+.palette-btn{padding:0.5rem;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);cursor:pointer;font-size:0.85rem;text-align:center;transition:border-color 0.2s;}
+.palette-btn:hover{border-color:var(--neon-purple);}
+.editor-main{flex:1;overflow:auto;background:#111;display:flex;align-items:flex-start;justify-content:flex-start;padding:1rem;}
+#canvas-wrap{position:relative;display:inline-block;user-select:none;}
+#canvas-wrap img{display:block;max-width:100%;}
+.furn{position:absolute;cursor:grab;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,0.6);box-shadow:0 2px 8px rgba(0,0,0,0.5);transition:border-color 0.15s;}
+.furn:active{cursor:grabbing;}
+.furn.selected{border-color:var(--neon-cyan)!important;box-shadow:0 0 0 2px var(--neon-cyan);}
+.furn-toolbar{position:absolute;top:-28px;left:50%;transform:translateX(-50%);display:none;gap:2px;z-index:10;}
+.furn.selected .furn-toolbar{display:flex;}
+.furn-toolbar button{padding:2px 6px;font-size:10px;border:none;border-radius:3px;cursor:pointer;background:var(--neon-purple);color:#fff;}
+.furn-toolbar button.del{background:#c0392b;}
+.editor-topbar{display:flex;align-items:center;gap:1rem;padding:0.6rem 1rem;background:var(--bg-surface);border-bottom:1px solid var(--border);}
+#save-btn{background:var(--neon-purple);color:#fff;border:none;padding:0.45rem 1.2rem;border-radius:6px;cursor:pointer;font-weight:700;}
+#save-btn:hover{opacity:0.85;}
+#save-status{font-size:0.85rem;color:var(--text-muted);}
+</style>
+
+<div class="editor-topbar">
+  <a href="/admin/layouts" class="btn btn-secondary btn-sm">← Planimetrie</a>
+  <strong style="font-size:1rem;"><%= layout.nome %></strong>
+  <button id="save-btn">💾 Salva</button>
+  <span id="save-status"></span>
+  <span style="margin-left:auto;font-size:0.8rem;color:var(--text-muted);">Trascina gli elementi • Doppio click per etichetta • ✕ per eliminare • ↺ per ruotare</span>
+</div>
+
+<div class="editor-wrap">
+  <div class="editor-sidebar">
+    <h3>Poltrone</h3>
+    <button class="palette-btn" data-tipo="poltrona_singola" data-w="36" data-h="36" data-color="#8e44ad" data-round="50%">💺 Poltrona</button>
+    <button class="palette-btn" data-tipo="divano_2" data-w="70" data-h="36" data-color="#6c3483" data-round="8px">🛋 Divano 2p</button>
+    <button class="palette-btn" data-tipo="divano_3" data-w="100" data-h="36" data-color="#5b2c6f" data-round="8px">🛋 Divano 3p</button>
+
+    <h3>Tavoli</h3>
+    <button class="palette-btn" data-tipo="tavolo_tondo_s" data-w="50" data-h="50" data-color="#1a5276" data-round="50%">⬤ T.Tondo S</button>
+    <button class="palette-btn" data-tipo="tavolo_tondo_m" data-w="70" data-h="70" data-color="#1a5276" data-round="50%">⬤ T.Tondo M</button>
+    <button class="palette-btn" data-tipo="tavolo_tondo_l" data-w="90" data-h="90" data-color="#154360" data-round="50%">⬤ T.Tondo L</button>
+    <button class="palette-btn" data-tipo="tavolo_rett_s" data-w="70" data-h="40" data-color="#1a5276" data-round="6px">▬ T.Rett. S</button>
+    <button class="palette-btn" data-tipo="tavolo_rett_m" data-w="100" data-h="50" data-color="#1a5276" data-round="6px">▬ T.Rett. M</button>
+    <button class="palette-btn" data-tipo="tavolo_rett_l" data-w="140" data-h="60" data-color="#154360" data-round="6px">▬ T.Rett. L</button>
+
+    <h3>Altro</h3>
+    <button class="palette-btn" data-tipo="bancone" data-w="120" data-h="30" data-color="#7b241c" data-round="4px">🍸 Bancone</button>
+    <button class="palette-btn" data-tipo="pedana" data-w="100" data-h="60" data-color="#1e8449" data-round="4px">🎵 Pedana</button>
+    <button class="palette-btn" data-tipo="cassa" data-w="40" data-h="40" data-color="#784212" data-round="4px">📦 Cassa</button>
+  </div>
+
+  <div class="editor-main">
+    <div id="canvas-wrap">
+      <img src="/img/sala3.png" id="planimetria-img" draggable="false">
+    </div>
+  </div>
+</div>
+
+<script>
+const wrap = document.getElementById('canvas-wrap');
+const img = document.getElementById('planimetria-img');
+let items = <%- JSON.stringify((layout.layout_json && layout.layout_json.items) ? layout.layout_json.items : []) %>;
+let nextId = items.length > 0 ? Math.max(...items.map(i => parseInt(i.id) || 0)) + 1 : 1;
+let selected = null;
+let dragging = null;
+let dragOffX = 0, dragOffY = 0;
+
+function renderAll() {
+  wrap.querySelectorAll('.furn').forEach(el => el.remove());
+  items.forEach(it => renderItem(it));
+}
+
+function renderItem(it) {
+  const el = document.createElement('div');
+  el.className = 'furn';
+  el.dataset.id = it.id;
+  el.style.cssText = `left:${it.x}px;top:${it.y}px;width:${it.w}px;height:${it.h}px;background:${it.color};border-radius:${it.round};transform:rotate(${it.rot||0}deg);`;
+  el.innerHTML = `<div class="furn-toolbar">
+    <button onclick="rotItem('${it.id}')" title="Ruota">↺</button>
+    <button onclick="labelItem('${it.id}')" title="Etichetta">✎</button>
+    <button class="del" onclick="delItem('${it.id}')" title="Elimina">✕</button>
+  </div>
+  <span style="pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${it.label||''}</span>`;
+
+  el.addEventListener('mousedown', e => {
+    if (e.target.tagName === 'BUTTON') return;
+    e.preventDefault();
+    selectItem(it.id);
+    dragging = it.id;
+    const rect = wrap.getBoundingClientRect();
+    dragOffX = e.clientX - rect.left - it.x;
+    dragOffY = e.clientY - rect.top - it.y;
+  });
+  wrap.appendChild(el);
+}
+
+function selectItem(id) {
+  selected = id;
+  wrap.querySelectorAll('.furn').forEach(el => el.classList.toggle('selected', el.dataset.id == id));
+}
+
+function getItem(id) { return items.find(i => i.id == id); }
+
+function rotItem(id) {
+  const it = getItem(id);
+  if (it) { it.rot = ((it.rot || 0) + 45) % 360; }
+  renderAll(); selectItem(id);
+}
+
+function labelItem(id) {
+  const it = getItem(id);
+  if (!it) return;
+  const v = prompt('Etichetta:', it.label || '');
+  if (v !== null) { it.label = v.substring(0, 10); renderAll(); selectItem(id); }
+}
+
+function delItem(id) {
+  items = items.filter(i => i.id != id);
+  selected = null;
+  renderAll();
+}
+
+document.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const rect = wrap.getBoundingClientRect();
+  const it = getItem(dragging);
+  if (!it) return;
+  it.x = Math.max(0, Math.min(img.offsetWidth - it.w, Math.round(e.clientX - rect.left - dragOffX)));
+  it.y = Math.max(0, Math.min(img.offsetHeight - it.h, Math.round(e.clientY - rect.top - dragOffY)));
+  const el = wrap.querySelector(`[data-id="${dragging}"]`);
+  if (el) { el.style.left = it.x + 'px'; el.style.top = it.y + 'px'; }
+});
+
+document.addEventListener('mouseup', () => { dragging = null; });
+
+wrap.addEventListener('click', e => {
+  if (!e.target.closest('.furn')) { selected = null; wrap.querySelectorAll('.furn').forEach(el => el.classList.remove('selected')); }
+});
+
+document.querySelectorAll('.palette-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const w = parseInt(btn.dataset.w), h = parseInt(btn.dataset.h);
+    const it = {
+      id: String(nextId++),
+      tipo: btn.dataset.tipo,
+      x: Math.round((img.offsetWidth - w) / 2),
+      y: Math.round((img.offsetHeight - h) / 2),
+      w, h,
+      color: btn.dataset.color,
+      round: btn.dataset.round,
+      rot: 0,
+      label: ''
+    };
+    items.push(it);
+    renderItem(it);
+    selectItem(it.id);
+  });
+});
+
+document.getElementById('save-btn').addEventListener('click', async () => {
+  const status = document.getElementById('save-status');
+  status.textContent = 'Salvataggio...';
+  try {
+    const r = await fetch('/admin/layouts/<%= layout.id %>/editor', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ layout_json: JSON.stringify({ items }) })
+    });
+    const d = await r.json();
+    status.textContent = d.ok ? '✓ Salvato' : '✗ Errore: ' + d.error;
+    setTimeout(() => { status.textContent = ''; }, 3000);
+  } catch(e) { status.textContent = '✗ Errore di rete'; }
+});
+
+img.addEventListener('load', renderAll);
+if (img.complete) renderAll();
+</script>
+<%- include('../_footer') %>

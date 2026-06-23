@@ -218,6 +218,27 @@ router.post('/layouts/:id/elimina', requireAdmin, async (req, res, next) => {
   }
 });
 
+// ── Layouts: editor visuale ─────────────────────────────────────────────────
+
+router.get('/layouts/:id/editor', requireAdmin, async (req, res, next) => {
+  try {
+    const { rows: [layout] } = await db.query('SELECT * FROM layouts WHERE id = $1', [req.params.id]);
+    if (!layout) return res.redirect('/admin/layouts');
+    res.render('admin/layouts/editor', { title: `Editor — ${layout.nome}`, active: 'layouts', layout });
+  } catch (err) { next(err); }
+});
+
+router.post('/layouts/:id/editor', requireAdmin, express.json(), async (req, res, next) => {
+  try {
+    const raw = req.body.layout_json;
+    const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    await db.query('UPDATE layouts SET layout_json=$1 WHERE id=$2', [JSON.stringify(parsed), req.params.id]);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message });
+  }
+});
+
 // ── Layouts: gestione posti ─────────────────────────────────────────────────
 
 router.get('/layouts/:id/posti', requireAdmin, async (req, res, next) => {

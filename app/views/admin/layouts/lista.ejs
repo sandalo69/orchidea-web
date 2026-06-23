@@ -15,7 +15,7 @@
             <td><strong><%= l.nome %></strong></td>
             <td><%= new Date(l.created_at).toLocaleDateString('it-IT') %></td>
             <td style="display:flex;gap:0.5rem;">
-              <a href="/admin/layouts/<%= l.id %>/posti" class="btn btn-sm btn-primary">Posti</a>
+              <a href="/admin/layouts/<%= l.id %>/editor" class="btn btn-sm btn-primary">Editor</a>
               <a href="/admin/layouts/<%= l.id %>/modifica" class="btn btn-sm btn-secondary">Modifica</a>
               <form method="POST" action="/admin/layouts/<%= l.id %>/elimina" onsubmit="return confirm('Eliminare?')">
                 <button class="btn btn-sm btn-danger">Elimina</button>
