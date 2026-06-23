@@ -18,7 +18,6 @@
             <div class="card-label"><%= new Date(ev.data_evento).toLocaleDateString('it-IT', {weekday:'long',day:'numeric',month:'long'}) %></div>
             <h3><%= ev.titolo %></h3>
             <p><%= ev.descrizione ? ev.descrizione.substring(0,120) + '...' : '' %></p>
-            <p style="margin-top:1rem;color:var(--neon-cyan);">Acconto: €<%= ev.costo_acconto %>/posto</p>
           </a>
         <% }) %>
       </div>
