@@ -22,9 +22,9 @@ async function sendConfirmationEmail(to, nome, token) {
     { nome, link }
   );
   await createTransporter().sendMail({
-    from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
+    from: `"OrchideaDisco" <${process.env.SMTP_USER}>`,
     to,
-    subject: 'Conferma il tuo account Orchidea Disco',
+    subject: 'Conferma il tuo account OrchideaDisco',
     html,
     text: `Ciao ${nome},\n\nConferma il tuo account: ${link}\n\nIl link scade in 24 ore.`,
   });
@@ -42,7 +42,7 @@ async function sendBulkNewsletter(oggetto, corpo, recipients) {
   for (const { email } of recipients) {
     try {
       await t.sendMail({
-        from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
+        from: `"OrchideaDisco" <${process.env.SMTP_USER}>`,
         to: email,
         subject: oggetto,
         html: corpo,
@@ -65,7 +65,7 @@ async function sendBookingConfirmation(to, nome, booking, evento) {
     return;
   }
   await createTransporter().sendMail({
-    from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
+    from: `"OrchideaDisco" <${process.env.SMTP_USER}>`,
     to,
     subject: `Prenotazione confermata — ${evento.titolo}`,
     html,
@@ -80,7 +80,7 @@ async function sendContactMessage(nome, emailMittente, messaggio) {
     return;
   }
   await createTransporter().sendMail({
-    from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
+    from: `"OrchideaDisco" <${process.env.SMTP_USER}>`,
     to: adminEmail,
     replyTo: `"${nome.replace(/[\r\n"]/g, '')}" <${emailMittente}>`,
     subject: `Messaggio dal sito — ${nome.replace(/[\r\n"]/g, '')}`,
@@ -101,9 +101,9 @@ async function sendNewsletterWelcome(nome, email, unsubscribeToken) {
     return;
   }
   await createTransporter().sendMail({
-    from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
+    from: `"OrchideaDisco" <${process.env.SMTP_USER}>`,
     to: email,
-    subject: 'Benvenuto nella newsletter Orchidea Disco! 🌸',
+    subject: 'Benvenuto nella newsletter OrchideaDisco! 🌸',
     html,
     text: `Ciao${nome ? ' ' + nome : ''}!\n\nSei iscritto/a alla newsletter di Orchidea.\nRiceverai in anteprima le date delle nostre serate.\n\n${unsubscribeLink ? 'Per disiscriverti: ' + unsubscribeLink + '\n\n' : ''}Orchidea\nVia U. Maddalena 40, Rottanova (VE) 30014`,
   });
@@ -120,9 +120,9 @@ async function sendPasswordReset(to, nome, token) {
     return;
   }
   await createTransporter().sendMail({
-    from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
+    from: `"OrchideaDisco" <${process.env.SMTP_USER}>`,
     to,
-    subject: 'Reimposta la password Orchidea Disco',
+    subject: 'Reimposta la password OrchideaDisco',
     html,
     text: `Ciao ${nome},\n\nReimposta la tua password: ${link}\n\nIl link scade in 1 ora.`,
   });
@@ -141,7 +141,7 @@ async function sendAdminBookingAlert(booking) {
       })
     : '';
   await createTransporter().sendMail({
-    from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
+    from: `"OrchideaDisco" <${process.env.SMTP_USER}>`,
     to: adminEmail,
     subject: `Nuova prenotazione #${booking.id} — ${booking.evento_titolo}`,
     text: [
