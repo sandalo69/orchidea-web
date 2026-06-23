@@ -5,7 +5,8 @@
 .editor-sidebar h3{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin:0.6rem 0 0.2rem;}
 .palette-btn{padding:0.5rem 0.4rem;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);cursor:pointer;font-size:0.82rem;text-align:center;transition:border-color 0.15s;width:100%;}
 .palette-btn:hover{border-color:var(--neon-purple);}
-.editor-main{flex:1;overflow:auto;background:#0a0a0a;padding:1rem;display:flex;align-items:center;justify-content:center;}
+.editor-main{flex:1;overflow:auto;background:#0a0a0a;}
+.editor-inner{min-height:100%;display:flex;align-items:center;justify-content:center;padding:1rem;}
 #canvas-wrap{position:relative;display:inline-block;user-select:none;}
 #sala-bg{display:block;}
 .furn{position:absolute;cursor:grab;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.5);box-shadow:0 2px 8px rgba(0,0,0,0.6);}
@@ -44,8 +45,10 @@
   </div>
 
   <div class="editor-main">
-    <div id="canvas-wrap">
-      <canvas id="sala-bg"></canvas>
+    <div class="editor-inner">
+      <div id="canvas-wrap">
+        <canvas id="sala-bg"></canvas>
+      </div>
     </div>
   </div>
 </div>
