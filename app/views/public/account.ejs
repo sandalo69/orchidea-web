@@ -57,5 +57,18 @@
   <div style="margin-top:1.5rem;text-align:center;">
     <a href="/prenota/mie" style="color:var(--text-muted);font-size:0.9rem;">← Le mie prenotazioni</a>
   </div>
+
+  <div class="card" style="margin-top:1.5rem;border-color:rgba(255,60,60,0.3);">
+    <h2 style="font-size:1.1rem;margin:0 0 0.8rem;color:#ff4d4d;">Zona pericolosa</h2>
+    <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:1.2rem;line-height:1.6;">
+      Eliminando l'account verranno cancellati immediatamente tutti i tuoi dati personali.<br>
+      I dati delle prenotazioni vengono conservati per obbligo di legge (10 anni).<br>
+      <a href="/privacy" style="color:var(--neon-purple);">Leggi l'informativa privacy →</a>
+    </p>
+    <form method="POST" action="/account/elimina"
+          onsubmit="return confirm('Sei sicuro? Questa operazione è irreversibile e cancellerà il tuo account.')">
+      <button type="submit" class="btn btn-danger">Elimina il mio account</button>
+    </form>
+  </div>
 </div>
 <%- include('_footer') %>

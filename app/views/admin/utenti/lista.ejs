@@ -14,6 +14,7 @@
         <th>Telefono</th>
         <th>Confermato</th>
         <th>Registrato</th>
+        <th>Consenso Privacy</th>
         <th></th>
       </tr>
     </thead>
@@ -30,6 +31,13 @@
         </td>
         <td style="color:var(--text-muted);">
           <%= new Date(u.created_at).toLocaleDateString('it-IT') %>
+        </td>
+        <td>
+          <% if (u.consenso_privacy_at) { %>
+            <span class="badge badge-green" title="<%= new Date(u.consenso_privacy_at).toLocaleString('it-IT') %>">✓ <%= new Date(u.consenso_privacy_at).toLocaleDateString('it-IT') %></span>
+          <% } else { %>
+            <span class="badge badge-gray">—</span>
+          <% } %>
         </td>
         <td><a href="/admin/utenti/<%= u.id %>/modifica" class="btn btn-secondary btn-sm">Modifica</a></td>
       </tr>

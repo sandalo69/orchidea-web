@@ -7,6 +7,8 @@
     <div class="alert alert-error">La password deve avere almeno 8 caratteri.</div>
   <% } else if (query.error === 'campi_mancanti') { %>
     <div class="alert alert-error">Compila tutti i campi.</div>
+  <% } else if (query.error === 'consenso_mancante') { %>
+    <div class="alert alert-error">Devi accettare l'informativa sulla privacy per registrarti.</div>
   <% } else if (query.error === 'errore_server') { %>
     <div class="alert alert-error">Errore del server. Riprova.</div>
   <% } else if (query.success === 'email_inviata') { %>
@@ -32,6 +34,12 @@
     <div class="form-group">
       <label>Password (min 8 caratteri)</label>
       <input type="password" name="password" required minlength="8" autocomplete="new-password">
+    </div>
+    <div style="margin:1rem 0;padding:1rem;background:rgba(255,255,255,0.04);border-radius:6px;border:1px solid var(--border);">
+      <label style="display:flex;align-items:flex-start;gap:0.75rem;cursor:pointer;color:var(--text-muted);font-size:0.9rem;line-height:1.5;">
+        <input type="checkbox" name="consenso_privacy" value="1" required style="width:auto;margin-top:3px;flex-shrink:0;">
+        <span>Ho letto e accetto l'<a href="/privacy" target="_blank" style="color:var(--neon-purple);">informativa sulla privacy</a> e acconsento al trattamento dei miei dati personali per la gestione dell'account e delle prenotazioni. <strong style="color:var(--text-primary);">*</strong></span>
+      </label>
     </div>
     <button type="submit" class="btn btn-primary" style="width:100%;margin-top:0.5rem;">Registrati</button>
   </form>

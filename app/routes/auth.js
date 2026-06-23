@@ -23,9 +23,12 @@ router.get('/registra', (req, res) => {
 });
 
 router.post('/registra', authLimiter, verifyCaptcha, async (req, res, next) => {
-  const { nome, cognome, email, telefono, password } = req.body;
+  const { nome, cognome, email, telefono, password, consenso_privacy } = req.body;
   if (!nome || !cognome || !email || !telefono || !password) {
     return res.redirect('/auth/registra?error=campi_mancanti');
+  }
+  if (!consenso_privacy) {
+    return res.redirect('/auth/registra?error=consenso_mancante');
   }
   if (password.length < 8) {
     return res.redirect('/auth/registra?error=password_corta');
@@ -39,8 +42,8 @@ router.post('/registra', authLimiter, verifyCaptcha, async (req, res, next) => {
     const token = crypto.randomBytes(32).toString('hex');
     const scadenza = new Date(Date.now() + 24 * 60 * 60 * 1000);
     await db.query(
-      `INSERT INTO users (nome, cognome, email, telefono, password_hash, token_conferma, token_conferma_scadenza)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      `INSERT INTO users (nome, cognome, email, telefono, password_hash, token_conferma, token_conferma_scadenza, consenso_privacy_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
       [nome, cognome, email.toLowerCase(), telefono, password_hash, token, scadenza]
     );
     await sendConfirmationEmail(email, nome, token);

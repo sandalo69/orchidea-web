@@ -57,12 +57,22 @@
     <% if (locals.newsletter === 'error') { %>
       <div class="alert-error" style="margin-bottom:1rem;">Email non valida.</div>
     <% } %>
-    <form method="POST" action="/newsletter/subscribe"
-          style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;">
-      <input type="text" name="nome" placeholder="Il tuo nome (opzionale)"
-             style="flex:1;min-width:150px;max-width:200px;">
-      <input type="email" name="email" placeholder="La tua email" required
-             style="flex:1;min-width:200px;max-width:300px;">
+    <% if (locals.newsletter === 'consenso') { %>
+      <div class="alert-error" style="margin-bottom:1rem;">Devi accettare il trattamento dei dati per iscriverti.</div>
+    <% } %>
+    <form method="POST" action="/newsletter/subscribe">
+      <div style="display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;margin-bottom:1rem;">
+        <input type="text" name="nome" placeholder="Il tuo nome (opzionale)"
+               style="flex:1;min-width:150px;max-width:200px;">
+        <input type="email" name="email" placeholder="La tua email" required
+               style="flex:1;min-width:200px;max-width:300px;">
+      </div>
+      <div style="margin:0 auto 1rem;max-width:500px;text-align:left;padding:0.8rem;background:rgba(255,255,255,0.04);border-radius:6px;border:1px solid var(--border);">
+        <label style="display:flex;align-items:flex-start;gap:0.75rem;cursor:pointer;color:var(--text-muted);font-size:0.85rem;line-height:1.5;">
+          <input type="checkbox" name="consenso_newsletter" value="1" required style="width:auto;margin-top:2px;flex-shrink:0;">
+          <span>Acconsento all'invio di comunicazioni promozionali sulle serate di OrchideaDisco, ai sensi dell'<a href="/privacy" target="_blank" style="color:var(--neon-purple);">informativa privacy</a>. Puoi disiscriverti in qualsiasi momento. <strong style="color:var(--text-primary);">*</strong></span>
+        </label>
+      </div>
       <button type="submit" class="btn btn-primary">Iscriviti</button>
     </form>
   </div>

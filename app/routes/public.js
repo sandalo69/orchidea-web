@@ -124,16 +124,21 @@ router.get('/news/:id', async (req, res, next) => {
 router.post('/newsletter/subscribe', async (req, res, next) => {
   const email = (req.body.email || '').trim().toLowerCase().substring(0, 255);
   const nome = (req.body.nome || '').trim().substring(0, 100);
+  const consenso = req.body.consenso_newsletter;
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return res.redirect('/?newsletter=error');
+  }
+  if (!consenso) {
+    return res.redirect('/?newsletter=consenso');
   }
   try {
     const unsubscribeToken = crypto.randomBytes(32).toString('hex');
     const result = await db.query(
-      `INSERT INTO newsletter_subscribers (email, nome, unsubscribe_token)
-       VALUES ($1, $2, $3)
+      `INSERT INTO newsletter_subscribers (email, nome, unsubscribe_token, consenso_newsletter_at)
+       VALUES ($1, $2, $3, NOW())
        ON CONFLICT (email) DO UPDATE
-         SET unsubscribe_token = COALESCE(newsletter_subscribers.unsubscribe_token, EXCLUDED.unsubscribe_token)
+         SET unsubscribe_token = COALESCE(newsletter_subscribers.unsubscribe_token, EXCLUDED.unsubscribe_token),
+             consenso_newsletter_at = COALESCE(newsletter_subscribers.consenso_newsletter_at, NOW())
        RETURNING (xmax = 0) AS is_new`,
       [email, nome || null, unsubscribeToken]
     );
@@ -212,6 +217,18 @@ router.post('/account/password', requireUser, async (req, res, next) => {
     const nuova_hash = await bcrypt.hash(nuova, 12);
     await db.query('UPDATE users SET password_hash=$1 WHERE id=$2', [nuova_hash, req.session.userId]);
     res.redirect('/account?success=password_aggiornata');
+  } catch (err) { next(err); }
+});
+
+router.get('/privacy', (req, res) => {
+  res.render('public/privacy', { title: 'Informativa Privacy' });
+});
+
+router.post('/account/elimina', requireUser, async (req, res, next) => {
+  try {
+    const userId = req.session.userId;
+    await db.query('DELETE FROM users WHERE id = $1', [userId]);
+    req.session.destroy(() => res.redirect('/?account=eliminato'));
   } catch (err) { next(err); }
 });
 
