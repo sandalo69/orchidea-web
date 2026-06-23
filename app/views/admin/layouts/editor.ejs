@@ -1,82 +1,112 @@
 <%- include('../_header', { title, active }) %>
 <style>
-.editor-wrap{display:flex;gap:0;height:calc(100vh - 130px);overflow:hidden;}
-.editor-sidebar{width:180px;flex-shrink:0;background:var(--bg-surface);border-right:1px solid var(--border);padding:1rem;overflow-y:auto;display:flex;flex-direction:column;gap:0.5rem;}
-.editor-sidebar h3{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin:0.5rem 0 0.3rem;}
-.palette-btn{padding:0.5rem;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);cursor:pointer;font-size:0.85rem;text-align:center;transition:border-color 0.2s;}
+.editor-wrap{display:flex;gap:0;height:calc(100vh - 112px);overflow:hidden;}
+.editor-sidebar{width:160px;flex-shrink:0;background:var(--bg-surface);border-right:1px solid var(--border);padding:0.8rem;overflow-y:auto;display:flex;flex-direction:column;gap:0.4rem;}
+.editor-sidebar h3{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--text-muted);margin:0.6rem 0 0.2rem;}
+.palette-btn{padding:0.5rem 0.4rem;border:1px solid var(--border);border-radius:6px;background:var(--bg-card);color:var(--text-primary);cursor:pointer;font-size:0.82rem;text-align:center;transition:border-color 0.15s;width:100%;}
 .palette-btn:hover{border-color:var(--neon-purple);}
-.editor-main{flex:1;overflow:auto;background:#111;display:flex;align-items:flex-start;justify-content:flex-start;padding:1rem;}
+.editor-main{flex:1;overflow:auto;background:#0a0a0a;padding:1rem;}
 #canvas-wrap{position:relative;display:inline-block;user-select:none;}
-#canvas-wrap img{display:block;max-width:100%;}
-.furn{position:absolute;cursor:grab;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,0.6);box-shadow:0 2px 8px rgba(0,0,0,0.5);transition:border-color 0.15s;}
+#sala-bg{display:block;}
+.furn{position:absolute;cursor:grab;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,0.5);box-shadow:0 2px 8px rgba(0,0,0,0.6);}
 .furn:active{cursor:grabbing;}
-.furn.selected{border-color:var(--neon-cyan)!important;box-shadow:0 0 0 2px var(--neon-cyan);}
-.furn-toolbar{position:absolute;top:-28px;left:50%;transform:translateX(-50%);display:none;gap:2px;z-index:10;}
+.furn.selected{border-color:#00e5ff !important;box-shadow:0 0 0 2px #00e5ff;}
+.furn-num{font-size:12px;font-weight:900;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,1);pointer-events:none;line-height:1;}
+.furn-toolbar{position:absolute;top:-30px;left:50%;transform:translateX(-50%);display:none;gap:2px;z-index:20;white-space:nowrap;}
 .furn.selected .furn-toolbar{display:flex;}
-.furn-toolbar button{padding:2px 6px;font-size:10px;border:none;border-radius:3px;cursor:pointer;background:var(--neon-purple);color:#fff;}
+.furn-toolbar button{padding:2px 7px;font-size:11px;border:none;border-radius:3px;cursor:pointer;background:var(--neon-purple);color:#fff;font-weight:700;}
 .furn-toolbar button.del{background:#c0392b;}
-.editor-topbar{display:flex;align-items:center;gap:1rem;padding:0.6rem 1rem;background:var(--bg-surface);border-bottom:1px solid var(--border);}
-#save-btn{background:var(--neon-purple);color:#fff;border:none;padding:0.45rem 1.2rem;border-radius:6px;cursor:pointer;font-weight:700;}
+.editor-topbar{display:flex;align-items:center;gap:0.8rem;padding:0.5rem 1rem;background:var(--bg-surface);border-bottom:1px solid var(--border);flex-wrap:wrap;}
+#save-btn{background:var(--neon-purple);color:#fff;border:none;padding:0.4rem 1.1rem;border-radius:6px;cursor:pointer;font-weight:700;font-size:0.9rem;}
 #save-btn:hover{opacity:0.85;}
-#save-status{font-size:0.85rem;color:var(--text-muted);}
+#save-status{font-size:0.82rem;color:var(--text-muted);}
 </style>
 
 <div class="editor-topbar">
   <a href="/admin/layouts" class="btn btn-secondary btn-sm">← Planimetrie</a>
-  <strong style="font-size:1rem;"><%= layout.nome %></strong>
+  <strong><%= layout.nome %></strong>
   <button id="save-btn">💾 Salva</button>
   <span id="save-status"></span>
-  <span style="margin-left:auto;font-size:0.8rem;color:var(--text-muted);">Trascina gli elementi • Doppio click per etichetta • ✕ per eliminare • ↺ per ruotare</span>
+  <span style="margin-left:auto;font-size:0.78rem;color:var(--text-muted);">Clicca palette → aggiungi · Trascina · Seleziona → ↺ ruota · ✎ etich. · ✕ elimina</span>
 </div>
 
 <div class="editor-wrap">
   <div class="editor-sidebar">
     <h3>Poltrone</h3>
-    <button class="palette-btn" data-tipo="poltrona_1" data-w="36" data-h="36" data-color="#8e44ad" data-round="8px">💺 1 posto</button>
-    <button class="palette-btn" data-tipo="poltrona_2" data-w="70" data-h="36" data-color="#6c3483" data-round="8px">💺 2 posti</button>
+    <button class="palette-btn" data-tipo="poltrona_1" data-color="#8e44ad" data-round="8px" data-ask-dim="1">💺 1 posto</button>
+    <button class="palette-btn" data-tipo="poltrona_2" data-color="#6c3483" data-round="8px" data-ask-dim="1">💺 2 posti</button>
 
     <h3>Tavoli</h3>
-    <button class="palette-btn" data-tipo="tavolo_tondo_s" data-w="50" data-h="50" data-color="#1a5276" data-round="50%">⬤ Tondo S</button>
-    <button class="palette-btn" data-tipo="tavolo_tondo_m" data-w="70" data-h="70" data-color="#1a5276" data-round="50%">⬤ Tondo M</button>
-    <button class="palette-btn" data-tipo="tavolo_tondo_l" data-w="90" data-h="90" data-color="#154360" data-round="50%">⬤ Tondo L</button>
+    <button class="palette-btn" data-tipo="tavolo_s" data-w="50" data-h="50" data-color="#1a5276" data-round="50%">⬤ Tondo S</button>
+    <button class="palette-btn" data-tipo="tavolo_m" data-w="70" data-h="70" data-color="#1a5276" data-round="50%">⬤ Tondo M</button>
+    <button class="palette-btn" data-tipo="tavolo_l" data-w="90" data-h="90" data-color="#154360" data-round="50%">⬤ Tondo L</button>
 
     <h3>Pedane</h3>
-    <button class="palette-btn" id="btn-pedana" data-tipo="pedana" data-color="#1e8449" data-round="4px">▬ Pedana (dim. libere)</button>
+    <button class="palette-btn" data-tipo="pedana" data-color="#1e8449" data-round="4px" data-ask-dim="1">▬ Pedana</button>
   </div>
 
   <div class="editor-main">
     <div id="canvas-wrap">
-      <img src="/img/sala3.png" id="planimetria-img" draggable="false">
+      <canvas id="sala-bg"></canvas>
     </div>
   </div>
 </div>
 
 <script>
 const wrap = document.getElementById('canvas-wrap');
-const img = document.getElementById('planimetria-img');
+const bgCanvas = document.getElementById('sala-bg');
+let canvasW = 0, canvasH = 0;
+
 let items = <%- JSON.stringify((layout.layout_json && layout.layout_json.items) ? layout.layout_json.items : []) %>;
 let nextId = items.length > 0 ? Math.max(...items.map(i => parseInt(i.id) || 0)) + 1 : 1;
 let selected = null;
-let dragging = null;
-let dragOffX = 0, dragOffY = 0;
+let dragging = null, dragOffX = 0, dragOffY = 0;
+
+function nextPoltronaNum() {
+  const nums = items
+    .filter(i => i.tipo === 'poltrona_1' || i.tipo === 'poltrona_2')
+    .map(i => parseInt(i.label) || 0)
+    .filter(n => n > 0);
+  return nums.length > 0 ? Math.max(...nums) + 1 : 1;
+}
+
+// Carica e ruota la planimetria 90° in senso orario
+const bgImg = new Image();
+bgImg.src = '/img/sala3.png';
+bgImg.onload = function() {
+  canvasW = bgImg.naturalHeight;
+  canvasH = bgImg.naturalWidth;
+  bgCanvas.width = canvasW;
+  bgCanvas.height = canvasH;
+  const ctx = bgCanvas.getContext('2d');
+  ctx.translate(canvasW, 0);
+  ctx.rotate(Math.PI / 2);
+  ctx.drawImage(bgImg, 0, 0);
+  wrap.style.width = canvasW + 'px';
+  wrap.style.height = canvasH + 'px';
+  renderAll();
+};
 
 function renderAll() {
   wrap.querySelectorAll('.furn').forEach(el => el.remove());
-  items.forEach(it => renderItem(it));
+  items.forEach(renderItem);
 }
 
 function renderItem(it) {
   const el = document.createElement('div');
   el.className = 'furn';
   el.dataset.id = it.id;
-  el.style.cssText = `left:${it.x}px;top:${it.y}px;width:${it.w}px;height:${it.h}px;background:${it.color};border-radius:${it.round};transform:rotate(${it.rot||0}deg);`;
+  const isPoltrona = it.tipo === 'poltrona_1' || it.tipo === 'poltrona_2';
+  el.style.cssText = `left:${it.x}px;top:${it.y}px;width:${it.w}px;height:${it.h}px;`
+    + `background:${it.color};border-radius:${it.round};transform:rotate(${it.rot||0}deg);`;
   el.innerHTML = `<div class="furn-toolbar">
-    <button onclick="rotItem('${it.id}')" title="Ruota">↺</button>
-    <button onclick="labelItem('${it.id}')" title="Etichetta">✎</button>
-    <button class="del" onclick="delItem('${it.id}')" title="Elimina">✕</button>
+    <button onclick="rotItem('${it.id}')">↺</button>
+    ${!isPoltrona ? `<button onclick="labelItem('${it.id}')">✎</button>` : ''}
+    <button class="del" onclick="delItem('${it.id}')">✕</button>
   </div>
-  <span style="pointer-events:none;text-shadow:0 1px 3px rgba(0,0,0,0.8);">${it.label||''}</span>`;
-
+  <span class="furn-num" style="font-size:${isPoltrona ? Math.min(it.w, it.h) * 0.45 : 11}px;">
+    ${it.label || ''}
+  </span>`;
   el.addEventListener('mousedown', e => {
     if (e.target.tagName === 'BUTTON') return;
     e.preventDefault();
@@ -93,22 +123,19 @@ function selectItem(id) {
   selected = id;
   wrap.querySelectorAll('.furn').forEach(el => el.classList.toggle('selected', el.dataset.id == id));
 }
-
 function getItem(id) { return items.find(i => i.id == id); }
 
 function rotItem(id) {
   const it = getItem(id);
-  if (it) { it.rot = ((it.rot || 0) + 45) % 360; }
+  if (it) it.rot = ((it.rot || 0) + 45) % 360;
   renderAll(); selectItem(id);
 }
-
 function labelItem(id) {
   const it = getItem(id);
   if (!it) return;
   const v = prompt('Etichetta:', it.label || '');
-  if (v !== null) { it.label = v.substring(0, 10); renderAll(); selectItem(id); }
+  if (v !== null) { it.label = v.substring(0, 12); renderAll(); selectItem(id); }
 }
-
 function delItem(id) {
   items = items.filter(i => i.id != id);
   selected = null;
@@ -120,42 +147,48 @@ document.addEventListener('mousemove', e => {
   const rect = wrap.getBoundingClientRect();
   const it = getItem(dragging);
   if (!it) return;
-  it.x = Math.max(0, Math.min(img.offsetWidth - it.w, Math.round(e.clientX - rect.left - dragOffX)));
-  it.y = Math.max(0, Math.min(img.offsetHeight - it.h, Math.round(e.clientY - rect.top - dragOffY)));
+  it.x = Math.max(0, Math.min(canvasW - it.w, Math.round(e.clientX - rect.left - dragOffX)));
+  it.y = Math.max(0, Math.min(canvasH - it.h, Math.round(e.clientY - rect.top - dragOffY)));
   const el = wrap.querySelector(`[data-id="${dragging}"]`);
   if (el) { el.style.left = it.x + 'px'; el.style.top = it.y + 'px'; }
 });
-
 document.addEventListener('mouseup', () => { dragging = null; });
-
 wrap.addEventListener('click', e => {
-  if (!e.target.closest('.furn')) { selected = null; wrap.querySelectorAll('.furn').forEach(el => el.classList.remove('selected')); }
+  if (!e.target.closest('.furn')) {
+    selected = null;
+    wrap.querySelectorAll('.furn').forEach(el => el.classList.remove('selected'));
+  }
 });
 
 document.querySelectorAll('.palette-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     let w = parseInt(btn.dataset.w) || 0;
     let h = parseInt(btn.dataset.h) || 0;
+    const askDim = btn.dataset.askDim === '1';
+    const isPoltrona = btn.dataset.tipo === 'poltrona_1' || btn.dataset.tipo === 'poltrona_2';
 
-    if (btn.dataset.tipo === 'pedana') {
-      const wIn = prompt('Larghezza pedana (pixel sulla planimetria):', '120');
+    if (askDim) {
+      const defaultW = isPoltrona ? (btn.dataset.tipo === 'poltrona_1' ? 30 : 55) : 120;
+      const defaultH = isPoltrona ? 30 : 60;
+      const wIn = prompt('Larghezza (px):', defaultW);
       if (wIn === null) return;
-      const hIn = prompt('Altezza pedana (pixel sulla planimetria):', '60');
+      const hIn = prompt('Altezza (px):', defaultH);
       if (hIn === null) return;
-      w = Math.max(20, parseInt(wIn) || 120);
-      h = Math.max(20, parseInt(hIn) || 60);
+      w = Math.max(10, parseInt(wIn) || defaultW);
+      h = Math.max(10, parseInt(hIn) || defaultH);
     }
 
+    const label = isPoltrona ? String(nextPoltronaNum()) : '';
     const it = {
       id: String(nextId++),
       tipo: btn.dataset.tipo,
-      x: Math.round((img.offsetWidth - w) / 2),
-      y: Math.round((img.offsetHeight - h) / 2),
+      x: Math.max(0, Math.round((canvasW - w) / 2)),
+      y: Math.max(0, Math.round((canvasH - h) / 2)),
       w, h,
       color: btn.dataset.color,
       round: btn.dataset.round,
       rot: 0,
-      label: ''
+      label
     };
     items.push(it);
     renderItem(it);
@@ -173,12 +206,9 @@ document.getElementById('save-btn').addEventListener('click', async () => {
       body: JSON.stringify({ layout_json: JSON.stringify({ items }) })
     });
     const d = await r.json();
-    status.textContent = d.ok ? '✓ Salvato' : '✗ Errore: ' + d.error;
+    status.textContent = d.ok ? '✓ Salvato' : '✗ ' + d.error;
     setTimeout(() => { status.textContent = ''; }, 3000);
   } catch(e) { status.textContent = '✗ Errore di rete'; }
 });
-
-img.addEventListener('load', renderAll);
-if (img.complete) renderAll();
 </script>
 <%- include('../_footer') %>
