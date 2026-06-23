@@ -37,9 +37,7 @@
     <button class="palette-btn" data-tipo="poltrona_2" data-color="#6c3483" data-round="8px" data-ask-dim="1">💺 2 posti</button>
 
     <h3>Tavoli</h3>
-    <button class="palette-btn" data-tipo="tavolo_s" data-w="50" data-h="50" data-color="#1a5276" data-round="50%">⬤ Tondo S</button>
-    <button class="palette-btn" data-tipo="tavolo_m" data-w="70" data-h="70" data-color="#1a5276" data-round="50%">⬤ Tondo M</button>
-    <button class="palette-btn" data-tipo="tavolo_l" data-w="90" data-h="90" data-color="#154360" data-round="50%">⬤ Tondo L</button>
+    <button class="palette-btn" data-tipo="tavolo_tondo" data-w="25" data-h="25" data-color="#1a5276" data-round="50%">⬤ Tondo</button>
 
     <h3>Pedane</h3>
     <button class="palette-btn" data-tipo="pedana" data-color="#1e8449" data-round="4px" data-ask-dim="1">▬ Pedana</button>
@@ -168,8 +166,8 @@ document.querySelectorAll('.palette-btn').forEach(btn => {
     const isPoltrona = btn.dataset.tipo === 'poltrona_1' || btn.dataset.tipo === 'poltrona_2';
 
     if (askDim) {
-      const defaultW = isPoltrona ? (btn.dataset.tipo === 'poltrona_1' ? 30 : 55) : 120;
-      const defaultH = isPoltrona ? 30 : 60;
+      const defaultW = isPoltrona ? (btn.dataset.tipo === 'poltrona_1' ? 20 : 40) : 120;
+      const defaultH = isPoltrona ? 20 : 60;
       const wIn = prompt('Larghezza (px):', defaultW);
       if (wIn === null) return;
       const hIn = prompt('Altezza (px):', defaultH);
