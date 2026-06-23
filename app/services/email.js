@@ -22,7 +22,7 @@ async function sendConfirmationEmail(to, nome, token) {
     { nome, link }
   );
   await createTransporter().sendMail({
-    from: `"Orchidea" <${process.env.SMTP_USER}>`,
+    from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
     to,
     subject: 'Conferma il tuo account Orchidea',
     html,
@@ -42,7 +42,7 @@ async function sendBulkNewsletter(oggetto, corpo, recipients) {
   for (const { email } of recipients) {
     try {
       await t.sendMail({
-        from: `"Orchidea" <${process.env.SMTP_USER}>`,
+        from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
         to: email,
         subject: oggetto,
         html: corpo,
@@ -65,7 +65,7 @@ async function sendBookingConfirmation(to, nome, booking, evento) {
     return;
   }
   await createTransporter().sendMail({
-    from: `"Orchidea" <${process.env.SMTP_USER}>`,
+    from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
     to,
     subject: `Prenotazione confermata — ${evento.titolo}`,
     html,
@@ -80,7 +80,7 @@ async function sendContactMessage(nome, emailMittente, messaggio) {
     return;
   }
   await createTransporter().sendMail({
-    from: `"Orchidea" <${process.env.SMTP_USER}>`,
+    from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
     to: adminEmail,
     replyTo: `"${nome.replace(/[\r\n"]/g, '')}" <${emailMittente}>`,
     subject: `Messaggio dal sito — ${nome.replace(/[\r\n"]/g, '')}`,
@@ -101,7 +101,7 @@ async function sendNewsletterWelcome(nome, email, unsubscribeToken) {
     return;
   }
   await createTransporter().sendMail({
-    from: `"Orchidea" <${process.env.SMTP_USER}>`,
+    from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
     to: email,
     subject: 'Benvenuto nella newsletter Orchidea! 🌸',
     html,
@@ -120,7 +120,7 @@ async function sendPasswordReset(to, nome, token) {
     return;
   }
   await createTransporter().sendMail({
-    from: `"Orchidea" <${process.env.SMTP_USER}>`,
+    from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
     to,
     subject: 'Reimposta la password Orchidea',
     html,
@@ -141,7 +141,7 @@ async function sendAdminBookingAlert(booking) {
       })
     : '';
   await createTransporter().sendMail({
-    from: `"Orchidea" <${process.env.SMTP_USER}>`,
+    from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
     to: adminEmail,
     subject: `Nuova prenotazione #${booking.id} — ${booking.evento_titolo}`,
     text: [
