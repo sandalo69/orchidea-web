@@ -24,7 +24,7 @@ async function sendConfirmationEmail(to, nome, token) {
   await createTransporter().sendMail({
     from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
     to,
-    subject: 'Conferma il tuo account Orchidea',
+    subject: 'Conferma il tuo account Orchidea Disco',
     html,
     text: `Ciao ${nome},\n\nConferma il tuo account: ${link}\n\nIl link scade in 24 ore.`,
   });
@@ -103,7 +103,7 @@ async function sendNewsletterWelcome(nome, email, unsubscribeToken) {
   await createTransporter().sendMail({
     from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
     to: email,
-    subject: 'Benvenuto nella newsletter Orchidea! 🌸',
+    subject: 'Benvenuto nella newsletter Orchidea Disco! 🌸',
     html,
     text: `Ciao${nome ? ' ' + nome : ''}!\n\nSei iscritto/a alla newsletter di Orchidea.\nRiceverai in anteprima le date delle nostre serate.\n\n${unsubscribeLink ? 'Per disiscriverti: ' + unsubscribeLink + '\n\n' : ''}Orchidea\nVia U. Maddalena 40, Rottanova (VE) 30014`,
   });
@@ -122,7 +122,7 @@ async function sendPasswordReset(to, nome, token) {
   await createTransporter().sendMail({
     from: `"Orchidea Disco" <${process.env.SMTP_USER}>`,
     to,
-    subject: 'Reimposta la password Orchidea',
+    subject: 'Reimposta la password Orchidea Disco',
     html,
     text: `Ciao ${nome},\n\nReimposta la tua password: ${link}\n\nIl link scade in 1 ora.`,
   });
