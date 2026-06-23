@@ -17,7 +17,7 @@
   <% if (eventi.length > 0) { %>
   <div style="margin-bottom:2rem;">
     <select onchange="location.href='/galleria' + (this.value ? '?evento=' + this.value : '')"
-            style="background:var(--card-bg);border:1px solid var(--border);color:var(--text-primary);padding:0.6rem 1rem;border-radius:6px;font-size:0.95rem;cursor:pointer;">
+            style="background:var(--card-bg);border:1px solid var(--border);color:var(--text-primary);padding:0.6rem 1rem;border-radius:6px;font-size:0.95rem;cursor:pointer;font-weight:700;">
       <option value="" <%= !eventoSelezionato ? 'selected' : '' %>>Tutte le foto</option>
       <% eventi.forEach(ev => { %>
         <option value="<%= ev.id %>" <%= eventoSelezionato == ev.id ? 'selected' : '' %>><%= ev.titolo %></option>
